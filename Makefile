@@ -1,4 +1,4 @@
-.PHONY: build test clean lint
+.PHONY: build test clean lint build-all
 
 BINARY := aion
 ifeq ($(OS),Windows_NT)
@@ -22,3 +22,12 @@ clean:
 
 fmt:
 	go fmt ./internal/... ./cmd/...
+
+dist:
+	mkdir -p dist
+
+build-all: dist
+	GOOS=windows GOARCH=amd64 go build -o dist/aion-windows-amd64.exe .
+	GOOS=darwin GOARCH=amd64 go build -o dist/aion-darwin-amd64 .
+	GOOS=darwin GOARCH=arm64 go build -o dist/aion-darwin-arm64 .
+	GOOS=linux GOARCH=amd64 go build -o dist/aion-linux-amd64 .
