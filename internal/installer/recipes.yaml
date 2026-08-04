@@ -1,0 +1,36 @@
+gh:
+  windows:
+    - winget: GitHub.cli
+    - scoop: gh
+    - choco: gh
+  macos:
+    - brew: gh
+  linux:
+    - apt: gh
+    - dnf: gh
+
+glab:
+  windows:
+    - winget: GitLab.GitLab
+  macos:
+    - brew: glab
+  linux:
+    - apt: glab
+    - dnf: glab
+
+az:
+  windows:
+    - winget: Microsoft.AzureCLI
+  macos:
+    - brew: azure-cli
+  linux:
+    - curl: "https://aka.ms/InstallAzureCLIDeb | bash"
+
+git:
+  windows:
+    - winget: Git.Git
+  macos:
+    - brew: git
+  linux:
+    - apt: git
+    - dnf: git
