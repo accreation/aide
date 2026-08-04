@@ -28,7 +28,11 @@ func PrintToolResults(w io.Writer, tools []CheckResult) {
 		case r.Ok && r.Required != "":
 			fmt.Fprintf(w, "  OK  %s v%s (%s)\n", r.Name, r.Installed, r.Required)
 		case r.Ok:
-			fmt.Fprintf(w, "  OK  %s v%s\n", r.Name, r.Installed)
+				if r.Installed != "" {
+					fmt.Fprintf(w, "  OK  %s v%s\n", r.Name, r.Installed)
+				} else {
+					fmt.Fprintf(w, "  OK  %s\n", r.Name)
+				}
 		case r.Installed != "":
 			fmt.Fprintf(w, "  FAIL  %s — version %s, required %s\n", r.Name, r.Installed, r.Required)
 		default:

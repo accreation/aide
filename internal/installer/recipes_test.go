@@ -66,7 +66,7 @@ func TestResolvePMForOS(t *testing.T) {
 
 func TestOSDetection(t *testing.T) {
 	os := CurrentOS()
-	if os != "windows" && os != "darwin" && os != "linux" {
+	if os != "windows" && os != "macos" && os != "linux" {
 		t.Errorf("unexpected OS: %q", os)
 	}
 	// Verify it matches runtime.GOOS
