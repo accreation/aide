@@ -36,6 +36,13 @@ export VERSION SHA_DARWIN_AMD64 SHA_DARWIN_ARM64 SHA_LINUX_AMD64 SHA_LINUX_ARM64
 export SHA_WINDOWS_AMD64 SHA_WINDOWS_ARM64 SHA_DEB_AMD64 SHA_DEB_ARM64 SHA_RPM_AMD64 SHA_RPM_ARM64
 
 render_template() {
-  envsubst < "$1" > "$2"
-  echo "  Rendered $2"
+  local tmpl="$1" out="$2" fmt="${3:-}"
+  if [[ -n "$fmt" ]]; then
+    # SHELL-FORMAT restricts substitution to listed variables so
+    # template-native variables (e.g. PowerShell $var) survive.
+    envsubst "$fmt" < "$tmpl" > "$out"
+  else
+    envsubst < "$tmpl" > "$out"
+  fi
+  echo "  Rendered $out"
 }
