@@ -238,3 +238,14 @@ jq:
   linux:
     - apt: jq
     - dnf: jq
+
+rg:
+  windows:
+    - winget: BurntSushi.ripgrep.MSVC
+    - scoop: ripgrep
+    - choco: ripgrep
+  macos:
+    - brew: ripgrep
+  linux:
+    - apt: ripgrep
+    - dnf: ripgrep
