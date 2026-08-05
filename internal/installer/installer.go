@@ -18,7 +18,35 @@ func New(recipes map[string]Recipe) *Installer {
 
 // Install installs a tool using the resolved package manager.
 // It prints progress to stdout and returns any error.
+// If the tool's recipe declares prerequisites (e.g. pipx), they are
+// installed first when missing.
 func (i *Installer) Install(toolName string) error {
+	return i.installWithGuard(toolName, make(map[string]bool))
+}
+
+// installWithGuard resolves and installs prerequisites recursively,
+// guarding against circular dependencies.
+func (i *Installer) installWithGuard(toolName string, seen map[string]bool) error {
+	if seen[toolName] {
+		return fmt.Errorf("circular dependency: %s", toolName)
+	}
+	seen[toolName] = true
+
+	// Install prerequisites declared in the recipe
+	if recipe, ok := i.recipes[toolName]; ok {
+		for _, req := range recipe.Requires {
+			if pmAvailable(req) {
+				continue
+			}
+			if _, hasRecipe := i.recipes[req]; hasRecipe {
+				fmt.Printf("  Prerequisite %s not found, installing...\n", req)
+				if err := i.installWithGuard(req, seen); err != nil {
+					return fmt.Errorf("installing prerequisite %s: %w", req, err)
+				}
+			}
+		}
+	}
+
 	pm, args, err := ResolvePM(toolName, i.recipes)
 	if err != nil {
 		return err
