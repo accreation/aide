@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 )
@@ -14,9 +15,10 @@ import (
 var defaultRecipes []byte
 
 type Recipe struct {
-	Windows []PMEntry `yaml:"windows,omitempty"`
-	MacOS   []PMEntry `yaml:"macos,omitempty"`
-	Linux   []PMEntry `yaml:"linux,omitempty"`
+	Windows []PMEntry         `yaml:"windows,omitempty"`
+	MacOS   []PMEntry         `yaml:"macos,omitempty"`
+	Linux   []PMEntry         `yaml:"linux,omitempty"`
+	ArchMap map[string]string `yaml:"arch_map,omitempty"`
 }
 
 type PMEntry map[string]string
@@ -31,6 +33,22 @@ func CurrentOS() string {
 	default:
 		return "linux"
 	}
+}
+
+// resolveTemplates replaces template variables in a recipe value.
+// Supported: ${GOARCH}, ${GOOS}, ${OS}, ${ARCH} (resolved via archMap, fallback to GOARCH).
+func resolveTemplates(value string, archMap map[string]string) string {
+	arch := runtime.GOARCH
+	if mapped, ok := archMap[runtime.GOARCH]; ok {
+		arch = mapped
+	}
+	replacer := strings.NewReplacer(
+		"${GOARCH}", runtime.GOARCH,
+		"${GOOS}", runtime.GOOS,
+		"${OS}", runtime.GOOS,
+		"${ARCH}", arch,
+	)
+	return replacer.Replace(value)
 }
 
 // LoadRecipes loads default embedded recipes, then merges external file if provided.
@@ -81,7 +99,8 @@ func ResolvePM(tool string, recipes map[string]Recipe) (string, []string, error)
 	for _, entry := range entries {
 		for pm, pkg := range entry {
 			if pmAvailable(pm) {
-				return pm, buildInstallArgs(pm, pkg), nil
+				resolved := resolveTemplates(pkg, recipe.ArchMap)
+				return pm, buildInstallArgs(pm, resolved), nil
 			}
 		}
 	}
@@ -112,6 +131,12 @@ func buildInstallArgs(pm, pkg string) []string {
 		return []string{"install", "-y", pkg}
 	case "curl":
 		return []string{"-fsSL", pkg} // pipe to bash handled by shell wrapper
+	case "github":
+		parts := strings.Fields(pkg)
+		if len(parts) != 3 {
+			return []string{pkg}
+		}
+		return parts
 	default:
 		return []string{"install", pkg}
 	}
