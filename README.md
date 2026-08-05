@@ -83,7 +83,7 @@ go install github.com/accreation/aide@latest
 
 ```bash
 cd your-project
-aide init --provider claude
+aide init --provider claude --name myproject
 ```
 
 This creates an `aide.yaml`:
@@ -93,6 +93,15 @@ provider: claude
 
 tools: []
 ```
+
+Use `--name` to register your project so you can jump back to it from any directory:
+
+```bash
+# From anywhere on your system
+aide start myproject
+```
+
+> 💡 Already have an `aide.yaml`? Run `aide init --name myproject` to register an existing project without recreating the config.
 
 ### 3. Add Your Tools
 
@@ -174,12 +183,16 @@ Aide uses your system's native package managers (`brew`, `apt`, `winget`, `dnf`,
 
 ```bash
 aide                  # Check environment + launch provider if OK
+aide start <name>     # Jump to a registered project and launch aide
 aide check            # Check only (no launch)
 aide install          # Check, install missing, launch
 aide i                # Alias for install
 aide init             # Create aide.yaml in current directory
+  --provider, -p      #   AI provider name (claude, copilot, codex, opencode)
+  --name, -n          #   Register project with a name for 'aide start'
 aide add <tool>       # Add a tool to aide.yaml
   --version, -v       #   Pin a specific version constraint
+aide cache clear      # Clear the remote recipes cache
 aide --version        # Print version
 aide --help           # Show help
 ```
