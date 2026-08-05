@@ -20,7 +20,6 @@ chmod 600 "$GIT_SSH_KEY"
 export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY -o StrictHostKeyChecking=accept-new"
 git clone --depth 1 --branch gh-pages \
   "git@github.com:accreation/aide-repo.git" "$REPO_DIR"
-rm -f "$GIT_SSH_KEY"
 
 # ── Download .deb packages from GitHub Release ──────────────────────
 DEB_AMD64_URL="https://github.com/accreation/aide/releases/download/v${VERSION}/aide_${VERSION}_amd64.deb"
@@ -75,4 +74,5 @@ else
   echo "  OK  APT/DNF repo updated to $VERSION"
 fi
 
+rm -f "$GIT_SSH_KEY"
 rm -rf "$REPO_DIR"

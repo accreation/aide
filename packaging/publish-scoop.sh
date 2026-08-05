@@ -19,7 +19,6 @@ echo "$SCOOP_BUCKET_DEPLOY_KEY" > "$GIT_SSH_KEY"
 chmod 600 "$GIT_SSH_KEY"
 export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY -o StrictHostKeyChecking=accept-new"
 git clone --depth 1 "git@github.com:accreation/scoop-bucket.git" "$BUCKET_DIR"
-rm -f "$GIT_SSH_KEY"
 mkdir -p "$BUCKET_DIR/bucket"
 render_template "$SCRIPT_DIR/scoop/aide.json.tmpl" "$BUCKET_DIR/bucket/aide.json" '$VERSION $SHA_WINDOWS_AMD64 $SHA_WINDOWS_ARM64'
 
@@ -35,4 +34,5 @@ else
   echo "  OK  Scoop manifest updated to $VERSION"
 fi
 
+rm -f "$GIT_SSH_KEY"
 rm -rf "$BUCKET_DIR"

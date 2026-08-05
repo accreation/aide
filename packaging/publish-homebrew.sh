@@ -19,7 +19,6 @@ echo "$HOMEBREW_TAP_DEPLOY_KEY" > "$GIT_SSH_KEY"
 chmod 600 "$GIT_SSH_KEY"
 export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY -o StrictHostKeyChecking=accept-new"
 git clone --depth 1 "git@github.com:accreation/homebrew-tap.git" "$TAP_DIR"
-rm -f "$GIT_SSH_KEY"
 mkdir -p "$TAP_DIR/Formula"
 render_template "$SCRIPT_DIR/homebrew/aide.rb.tmpl" "$TAP_DIR/Formula/aide.rb"
 
@@ -35,4 +34,5 @@ else
   echo "  OK  Homebrew formula updated to $VERSION"
 fi
 
+rm -f "$GIT_SSH_KEY"
 rm -rf "$TAP_DIR"
