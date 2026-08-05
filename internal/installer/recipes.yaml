@@ -69,3 +69,14 @@ docker:
   linux:
     - apt: docker.io
     - dnf: docker
+
+python:
+  windows:
+    - winget: Python.Python.3.12
+    - scoop: python
+    - choco: python
+  macos:
+    - brew: python
+  linux:
+    - apt: python3
+    - dnf: python3
