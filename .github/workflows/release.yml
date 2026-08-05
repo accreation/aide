@@ -127,7 +127,7 @@ jobs:
   checksums:
     name: Generate checksums
     runs-on: ubuntu-latest
-    needs: [build, linux-packages, windows-installer]
+    needs: [build, linux-packages]
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
