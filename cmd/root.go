@@ -11,9 +11,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Version is set via ldflags at build time: -X aion/cmd.Version=1.0.0
+var Version = "dev"
+
 var rootCmd = &cobra.Command{
-	Use:   "aion",
-	Short: "AI environment manager — check and install tools for your AI provider",
+	Use:     "aion",
+	Version: Version,
+	Short:   "AI environment manager — check and install tools for your AI provider",
 	Long: `Aion reads aion.yaml and verifies that your AI provider and all required
 tools are installed with correct versions.
 
