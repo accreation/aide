@@ -260,3 +260,14 @@ fd:
   linux:
     - apt: fd-find
     - dnf: fd-find
+
+fzf:
+  windows:
+    - winget: junegunn.fzf
+    - scoop: fzf
+    - choco: fzf
+  macos:
+    - brew: fzf
+  linux:
+    - apt: fzf
+    - dnf: fzf
