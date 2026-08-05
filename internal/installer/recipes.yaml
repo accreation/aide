@@ -26,6 +26,17 @@ az:
   linux:
     - curl: "https://aka.ms/InstallAzureCLIDeb | bash"
 
+rtk:
+  arch_map:
+    amd64: x86_64
+    arm64: aarch64
+  windows:
+    - github: "rtk-ai/rtk rtk-${ARCH}-pc-windows-msvc.zip rtk.exe"
+  macos:
+    - brew: rtk
+  linux:
+    - curl: "https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh"
+
 git:
   windows:
     - winget: Git.Git
