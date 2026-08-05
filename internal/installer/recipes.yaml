@@ -1,3 +1,16 @@
+# Recipe format:
+#   <tool>:
+#     arch_map:              # optional — maps GOARCH to tool-specific arch names
+#       amd64: x86_64
+#     windows/macos/linux:   # per-OS install methods (tried in order)
+#       - <pm>: <package>
+#
+# Package managers: winget, scoop, choco, brew, apt, dnf, curl, github
+#   github format: "owner/repo asset-pattern binary-name"
+#   curl format:   "url | sh"  (piped to bash)
+#
+# Template variables: ${GOARCH}, ${GOOS}, ${OS}, ${ARCH} (from arch_map)
+
 gh:
   windows:
     - winget: GitHub.cli
