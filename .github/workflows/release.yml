@@ -220,3 +220,83 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+
+  # ── Publish to package managers ──────────────────────────────────
+  publish:
+    name: Publish to package managers
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        manager: [homebrew, scoop, winget, chocolatey, apt-dnf]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Download checksums
+        uses: actions/download-artifact@v4
+        with:
+          name: checksums
+          path: artifacts
+
+      - name: Install dependencies (apt-dnf)
+        if: matrix.manager == 'apt-dnf'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq createrepo-c apt-utils
+
+      - name: Install dependencies (winget)
+        if: matrix.manager == 'winget'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Install dependencies (chocolatey)
+        if: matrix.manager == 'chocolatey'
+        run: |
+          # Install Mono (required by choco on Linux)
+          sudo apt-get install -y -qq mono-complete
+
+      - name: Publish (Homebrew)
+        if: matrix.manager == 'homebrew'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          CHKSUM_FILE: artifacts/aide_*_checksums.txt
+          HOMEBREW_TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+        run: bash packaging/publish-homebrew.sh
+
+      - name: Publish (Scoop)
+        if: matrix.manager == 'scoop'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          CHKSUM_FILE: artifacts/aide_*_checksums.txt
+          SCOOP_BUCKET_DEPLOY_KEY: ${{ secrets.SCOOP_BUCKET_DEPLOY_KEY }}
+        run: bash packaging/publish-scoop.sh
+
+      - name: Publish (Winget)
+        if: matrix.manager == 'winget'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
+        run: bash packaging/publish-winget.sh
+
+      - name: Publish (Chocolatey)
+        if: matrix.manager == 'chocolatey'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          CHKSUM_FILE: artifacts/aide_*_checksums.txt
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        run: bash packaging/publish-choco.sh
+
+      - name: Publish (APT/DNF)
+        if: matrix.manager == 'apt-dnf'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          AIDE_REPO_DEPLOY_KEY: ${{ secrets.AIDE_REPO_DEPLOY_KEY }}
+        run: bash packaging/publish-apt-dnf.sh
