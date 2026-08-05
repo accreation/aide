@@ -151,3 +151,14 @@ dotnet:
     - brew: dotnet-sdk
   linux:
     - curl: "https://dot.net/v1/dotnet-install.sh | bash"
+
+kubectl:
+  windows:
+    - winget: Kubernetes.kubectl
+    - scoop: kubectl
+    - choco: kubernetes-cli
+  macos:
+    - brew: kubectl
+  linux:
+    - apt: kubectl
+    - dnf: kubectl
