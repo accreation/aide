@@ -13,10 +13,17 @@ func TestLaunchNotFound(t *testing.T) {
 }
 
 func TestLaunchSuccess(t *testing.T) {
-	// Use a command that exits cleanly
 	l := &Launcher{}
 	err := l.Launch("go", "version")
 	if err != nil {
 		t.Logf("launch failed (may be expected in restricted env): %v", err)
+	}
+}
+
+func TestLaunchWithAccountMissing(t *testing.T) {
+	l := &Launcher{AccountName: "nonexistent-account"}
+	err := l.Launch("go", "version")
+	if err == nil {
+		t.Fatal("expected error for missing account")
 	}
 }
