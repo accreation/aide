@@ -58,3 +58,14 @@ git:
   linux:
     - apt: git
     - dnf: git
+
+docker:
+  windows:
+    - winget: Docker.DockerDesktop
+    - scoop: docker
+    - choco: docker-desktop
+  macos:
+    - brew: docker
+  linux:
+    - apt: docker.io
+    - dnf: docker
