@@ -271,3 +271,14 @@ fzf:
   linux:
     - apt: fzf
     - dnf: fzf
+
+graphify:
+  windows:
+    - pipx: graphifyy
+    - pip: graphifyy
+  macos:
+    - pipx: graphifyy
+    - pip: graphifyy
+  linux:
+    - pipx: graphifyy
+    - pip: graphifyy
