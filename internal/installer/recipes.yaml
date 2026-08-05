@@ -205,3 +205,14 @@ pnpm:
     - brew: pnpm
   linux:
     - curl: "https://get.pnpm.io/install.sh | sh -"
+
+yarn:
+  windows:
+    - winget: Yarn.Yarn
+    - scoop: yarn
+    - choco: yarn
+  macos:
+    - brew: yarn
+  linux:
+    - apt: yarn
+    - dnf: yarn
