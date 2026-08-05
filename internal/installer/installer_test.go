@@ -1,6 +1,9 @@
 package installer
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -33,14 +36,26 @@ func TestInstallGithubDispatch(t *testing.T) {
 		},
 	}
 	inst := New(recipes)
-	// Github install will fail because there's no real release, but it should
-	// reach the github codepath (not fall through to default exec).
+
+	// Serve a valid release JSON with no matching assets so the test is
+	// hermetic (no real GitHub API call).
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(githubRelease{TagName: "v9.9.9"})
+	}))
+	defer srv.Close()
+
+	origAPI := githubAPIBaseURL
+	githubAPIBaseURL = srv.URL
+	defer func() { githubAPIBaseURL = origAPI }()
+
+	// Github install should reach the github codepath and fail on the
+	// missing asset — not fall through to default exec.
 	err := inst.Install("mytool")
 	if err == nil {
 		t.Fatal("expected error — github dispatch should attempt a real fetch")
 	}
-	// Error should be from github fetch, not from exec.LookPath
-	if !strings.Contains(err.Error(), "fetching release") && !strings.Contains(err.Error(), "downloading") {
-		t.Fatalf("expected github-related error, got: %v", err)
+	// Error should come from asset matching on the mock release.
+	if !strings.Contains(err.Error(), "no asset matching") {
+		t.Fatalf("expected no-asset error, got: %v", err)
 	}
 }

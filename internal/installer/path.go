@@ -114,12 +114,27 @@ func appendToShellRc(rcPath, line string) error {
 	return err
 }
 
-// ensureInPathWindows adds binDir to user PATH via registry.
+// ensureInPathWindows adds binDir to the user PATH via PowerShell.
+// setx silently truncates values longer than 1024 characters, which would
+// permanently corrupt long PATHs, so we use
+// [Environment]::SetEnvironmentVariable('Path', ..., 'User') instead — it
+// has no such limit and writes to the same User scope.
 func ensureInPathWindows(binDir string) error {
-	cmd := exec.Command("cmd", "/c", "setx", "PATH", os.Getenv("PATH")+";"+binDir)
+	if isInPathWindows(binDir) {
+		return nil
+	}
+	newPath := os.Getenv("PATH") + ";" + binDir
+
+	// Pass the new PATH via an environment variable to avoid quoting issues
+	// (backslashes and single quotes in paths are common on Windows).
+	cmd := exec.Command(
+		"powershell", "-NoProfile", "-Command",
+		"[Environment]::SetEnvironmentVariable('Path', $env:AION_NEW_PATH, 'User')",
+	)
+	cmd.Env = append(os.Environ(), "AION_NEW_PATH="+newPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("setx failed: %v: %s", err, string(output))
+		return fmt.Errorf("setting user PATH: %v: %s", err, string(output))
 	}
 	return nil
 }
