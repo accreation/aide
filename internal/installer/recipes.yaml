@@ -173,3 +173,16 @@ terraform:
   linux:
     - apt: terraform
     - dnf: terraform
+
+aws:
+  windows:
+    - winget: Amazon.AWSCLI
+    - scoop: aws
+    - choco: awscli
+  macos:
+    - brew: awscli
+  linux:
+    - curl: "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip -o /tmp/awscliv2.zip && unzip -q /tmp/awscliv2.zip -d /tmp && sudo /tmp/aws/install"
+  arch_map:
+    amd64: x86_64
+    arm64: aarch64
