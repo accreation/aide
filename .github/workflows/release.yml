@@ -80,6 +80,9 @@ jobs:
         with:
           name: aide-linux-${{ matrix.arch }}
 
+      - name: Extract binary
+        run: tar -xzf aide-linux-${{ matrix.arch }}.tar.gz
+
       - name: Install nfpm
         run: |
           echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
@@ -132,6 +135,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: aide-windows-amd64
+
+      - name: Extract binary
+        shell: pwsh
+        run: Expand-Archive -Path aide-windows-amd64.exe.zip -DestinationPath .
 
       - name: Build NSIS installer
         shell: pwsh
