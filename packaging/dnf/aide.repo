@@ -1,0 +1,6 @@
+[aide]
+name=Aide — AI environment manager
+baseurl=https://accreation.github.io/aide-repo/aide
+enabled=1
+gpgcheck=1
+gpgkey=https://accreation.github.io/aide-repo/gpg.key

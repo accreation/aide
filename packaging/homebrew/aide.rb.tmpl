@@ -1,0 +1,32 @@
+class Aide < Formula
+  desc "The package.json for your AI development environment"
+  homepage "https://github.com/accreation/aide"
+  version "$VERSION"
+  license "AGPL-3.0"
+
+  if OS.mac?
+    if Hardware::CPU.arm?
+      url "https://github.com/accreation/aide/releases/download/v$VERSION/aide-darwin-arm64.tar.gz"
+      sha256 "$SHA_DARWIN_ARM64"
+    else
+      url "https://github.com/accreation/aide/releases/download/v$VERSION/aide-darwin-amd64.tar.gz"
+      sha256 "$SHA_DARWIN_AMD64"
+    end
+  elsif OS.linux?
+    if Hardware::CPU.arm?
+      url "https://github.com/accreation/aide/releases/download/v$VERSION/aide-linux-arm64.tar.gz"
+      sha256 "$SHA_LINUX_ARM64"
+    else
+      url "https://github.com/accreation/aide/releases/download/v$VERSION/aide-linux-amd64.tar.gz"
+      sha256 "$SHA_LINUX_AMD64"
+    end
+  end
+
+  def install
+    bin.install Dir["aide-*"].first => "aide"
+  end
+
+  test do
+    system "#{bin}/aide", "--version"
+  end
+end

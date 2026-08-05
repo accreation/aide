@@ -1,0 +1,22 @@
+$ErrorActionPreference = 'Stop'
+$packageName = 'aide'
+$url64 = 'https://github.com/accreation/aide/releases/download/v$VERSION/aide-windows-amd64.exe.zip'
+$checksum64 = '$SHA_WINDOWS_AMD64'
+
+$binDir = "$env:USERPROFILE\.local\bin"
+New-Item -ItemType Directory -Force -Path $binDir | Out-Null
+
+$packageArgs = @{
+  packageName    = $packageName
+  url64bit       = $url64
+  checksum64     = $checksum64
+  checksumType64 = 'sha256'
+  unzipLocation  = $binDir
+}
+
+Install-ChocolateyZipPackage @packageArgs
+
+$extracted = Get-ChildItem "$binDir\aide-windows-*.exe" | Select-Object -First 1
+Move-Item $extracted.FullName "$binDir\aide.exe" -Force
+
+Install-ChocolateyPath $binDir 'User'
