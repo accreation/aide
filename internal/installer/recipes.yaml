@@ -141,3 +141,13 @@ java:
   linux:
     - apt: default-jdk
     - dnf: java-21-openjdk
+
+dotnet:
+  windows:
+    - winget: Microsoft.DotNet.SDK.9
+    - scoop: dotnet-sdk
+    - choco: dotnet-sdk
+  macos:
+    - brew: dotnet-sdk
+  linux:
+    - curl: "https://dot.net/v1/dotnet-install.sh | bash"
