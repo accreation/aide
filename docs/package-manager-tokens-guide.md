@@ -28,25 +28,23 @@
 
 1. **Создай отдельный GitHub-аккаунт** (рекомендуется bot-аккаунт, например `accreation-bot`). Можно использовать и свой личный, но bot-аккаунт безопаснее — если токен скомпрометирован, пострадает только он.
 
-2. Войди под этим аккаунтом → **Settings → Developer settings → Personal access tokens → Fine-grained tokens** (или Tokens (classic)).
+2. Войди под этим аккаунтом → **Settings → Developer settings → Personal access tokens → Tokens (classic)**. *(Не Fine-grained — в них права на PR не даются для публичных репозиториев.)*
 
-3. Нажми **Generate new token**.
+3. Нажми **Generate new token → Generate new token (classic)**.
 
 4. Заполни:
-   - **Token name**: `aide-winget-publisher`
-   - **Expiration**: `90 days` (или `No expiration`, но тогда не забудь обновлять)
-   - **Repository access**: `Public Repositories (read-only)` — wingetcreate работает с публичным microsoft/winget-pkgs, этого достаточно
-   - **Permissions**:
-     - `Pull requests: Read and write` (чтобы создавать PR)
+   - **Note**: `aide-winget-publisher`
+   - **Expiration**: `90 days` (или `No expiration`)
+   - **Scopes**: отметь **только** `public_repo` — это даёт доступ на создание PR в любые публичные репозитории, включая `microsoft/winget-pkgs`
 
-5. Нажми **Generate token**, скопируй значение (начинается с `github_pat_`).
+5. Нажми **Generate token**, скопируй значение (начинается с `ghp_`).
 
 6. Установи в секреты:
    ```bash
-   gh secret set WINGET_GITHUB_TOKEN --repo accreation/aide --body "github_pat_XXXXXXXXXXXXXXXXXXXX"
+   gh secret set WINGET_GITHUB_TOKEN --repo accreation/aide --body "ghp_XXXXXXXXXXXXXXXXXXXX"
    ```
 
-> ⚠️ **Важно:** У токенов Fine-grained есть срок действия. Поставь напоминание обновить за неделю до истечения, иначе winget-публикация начнёт падать.
+> ⚠️ **Важно:** У classic-токенов есть срок действия. Поставь напоминание обновить за неделю до истечения, иначе winget-публикация начнёт падать.
 
 ---
 
