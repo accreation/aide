@@ -227,3 +227,14 @@ helm:
   linux:
     - apt: helm
     - dnf: helm
+
+jq:
+  windows:
+    - winget: jqlang.jq
+    - scoop: jq
+    - choco: jq
+  macos:
+    - brew: jq
+  linux:
+    - apt: jq
+    - dnf: jq
