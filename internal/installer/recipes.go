@@ -15,10 +15,11 @@ import (
 var defaultRecipes []byte
 
 type Recipe struct {
-	Windows []PMEntry         `yaml:"windows,omitempty"`
-	MacOS   []PMEntry         `yaml:"macos,omitempty"`
-	Linux   []PMEntry         `yaml:"linux,omitempty"`
-	ArchMap map[string]string `yaml:"arch_map,omitempty"`
+	Windows  []PMEntry         `yaml:"windows,omitempty"`
+	MacOS    []PMEntry         `yaml:"macos,omitempty"`
+	Linux    []PMEntry         `yaml:"linux,omitempty"`
+	ArchMap  map[string]string `yaml:"arch_map,omitempty"`
+	Requires []string          `yaml:"requires,omitempty"`
 }
 
 type PMEntry map[string]string

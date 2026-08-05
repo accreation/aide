@@ -2,10 +2,12 @@
 #   <tool>:
 #     arch_map:              # optional — maps GOARCH to tool-specific arch names
 #       amd64: x86_64
+#     requires:              # optional — prerequisites installed first if missing
+#       - pipx
 #     windows/macos/linux:   # per-OS install methods (tried in order)
 #       - <pm>: <package>
 #
-# Package managers: winget, scoop, choco, brew, apt, dnf, curl, github
+# Package managers: winget, scoop, choco, brew, apt, dnf, curl, github, pip, pipx
 #   github format: "owner/repo asset-pattern binary-name"
 #   curl format:   "url | sh"  (piped to bash)
 #
@@ -58,3 +60,239 @@ git:
   linux:
     - apt: git
     - dnf: git
+
+docker:
+  windows:
+    - winget: Docker.DockerDesktop
+    - scoop: docker
+    - choco: docker-desktop
+  macos:
+    - brew: docker
+  linux:
+    - apt: docker.io
+    - dnf: docker
+
+python:
+  windows:
+    - winget: Python.Python.3.12
+    - scoop: python
+    - choco: python
+  macos:
+    - brew: python
+  linux:
+    - apt: python3
+    - dnf: python3
+
+nodejs:
+  windows:
+    - winget: OpenJS.NodeJS.LTS
+    - scoop: nodejs
+    - choco: nodejs
+  macos:
+    - brew: node
+  linux:
+    - apt: nodejs
+    - dnf: nodejs
+
+bun:
+  windows:
+    - winget: Oven-sh.Bun
+    - scoop: bun
+  macos:
+    - brew: oven-sh/bun/bun
+  linux:
+    - curl: "https://bun.sh/install | bash"
+
+deno:
+  windows:
+    - winget: DenoLand.Deno
+    - scoop: deno
+    - choco: deno
+  macos:
+    - brew: deno
+  linux:
+    - curl: "https://deno.land/install.sh | sh"
+
+go:
+  windows:
+    - winget: GoLang.Go
+    - scoop: go
+    - choco: golang
+  macos:
+    - brew: go
+  linux:
+    - apt: golang-go
+    - dnf: golang
+
+rustup:
+  windows:
+    - winget: Rustlang.Rustup
+    - scoop: rustup
+  macos:
+    - curl: "https://sh.rustup.rs | sh -s -- -y"
+  linux:
+    - curl: "https://sh.rustup.rs | sh -s -- -y"
+
+java:
+  windows:
+    - winget: EclipseAdoptium.Temurin.21.JDK
+    - scoop: temurin21-jdk
+    - choco: temurin
+  macos:
+    - brew: openjdk
+  linux:
+    - apt: default-jdk
+    - dnf: java-21-openjdk
+
+dotnet:
+  windows:
+    - winget: Microsoft.DotNet.SDK.9
+    - scoop: dotnet-sdk
+    - choco: dotnet-sdk
+  macos:
+    - brew: dotnet-sdk
+  linux:
+    - curl: "https://dot.net/v1/dotnet-install.sh | bash"
+
+kubectl:
+  windows:
+    - winget: Kubernetes.kubectl
+    - scoop: kubectl
+    - choco: kubernetes-cli
+  macos:
+    - brew: kubectl
+  linux:
+    - apt: kubectl
+    - dnf: kubectl
+
+terraform:
+  windows:
+    - winget: Hashicorp.Terraform
+    - scoop: terraform
+    - choco: terraform
+  macos:
+    - brew: terraform
+  linux:
+    - apt: terraform
+    - dnf: terraform
+
+aws:
+  windows:
+    - winget: Amazon.AWSCLI
+    - scoop: aws
+    - choco: awscli
+  macos:
+    - brew: awscli
+  linux:
+    - curl: "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip -o /tmp/awscliv2.zip && unzip -q /tmp/awscliv2.zip -d /tmp && sudo /tmp/aws/install"
+  arch_map:
+    amd64: x86_64
+    arm64: aarch64
+
+gcloud:
+  windows:
+    - winget: Google.GoogleCloudSDK
+    - scoop: gcloud
+  macos:
+    - brew: google-cloud-sdk
+  linux:
+    - curl: "https://sdk.cloud.google.com | bash"
+
+pnpm:
+  windows:
+    - winget: pnpm.pnpm
+    - scoop: pnpm
+    - choco: pnpm
+  macos:
+    - brew: pnpm
+  linux:
+    - curl: "https://get.pnpm.io/install.sh | sh -"
+
+yarn:
+  windows:
+    - winget: Yarn.Yarn
+    - scoop: yarn
+    - choco: yarn
+  macos:
+    - brew: yarn
+  linux:
+    - apt: yarn
+    - dnf: yarn
+
+helm:
+  windows:
+    - winget: Helm.Helm
+    - scoop: helm
+    - choco: kubernetes-helm
+  macos:
+    - brew: helm
+  linux:
+    - apt: helm
+    - dnf: helm
+
+jq:
+  windows:
+    - winget: jqlang.jq
+    - scoop: jq
+    - choco: jq
+  macos:
+    - brew: jq
+  linux:
+    - apt: jq
+    - dnf: jq
+
+rg:
+  windows:
+    - winget: BurntSushi.ripgrep.MSVC
+    - scoop: ripgrep
+    - choco: ripgrep
+  macos:
+    - brew: ripgrep
+  linux:
+    - apt: ripgrep
+    - dnf: ripgrep
+
+fd:
+  windows:
+    - winget: sharkdp.fd
+    - scoop: fd
+    - choco: fd
+  macos:
+    - brew: fd
+  linux:
+    - apt: fd-find
+    - dnf: fd-find
+
+fzf:
+  windows:
+    - winget: junegunn.fzf
+    - scoop: fzf
+    - choco: fzf
+  macos:
+    - brew: fzf
+  linux:
+    - apt: fzf
+    - dnf: fzf
+
+graphify:
+  requires: [pipx]
+  windows:
+    - pipx: graphifyy
+    - pip: graphifyy
+  macos:
+    - pipx: graphifyy
+    - pip: graphifyy
+  linux:
+    - pipx: graphifyy
+    - pip: graphifyy
+
+pipx:
+  windows:
+    - scoop: pipx
+    - pip: pipx
+  macos:
+    - brew: pipx
+  linux:
+    - apt: pipx
+    - dnf: pipx
+    - pip: pipx
