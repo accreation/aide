@@ -80,3 +80,14 @@ python:
   linux:
     - apt: python3
     - dnf: python3
+
+nodejs:
+  windows:
+    - winget: OpenJS.NodeJS.LTS
+    - scoop: nodejs
+    - choco: nodejs
+  macos:
+    - brew: node
+  linux:
+    - apt: nodejs
+    - dnf: nodejs
