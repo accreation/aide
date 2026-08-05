@@ -23,7 +23,8 @@ mkdir -p "$BUCKET_DIR/bucket"
 render_template "$SCRIPT_DIR/scoop/aide.json.tmpl" "$BUCKET_DIR/bucket/aide.json" '$VERSION $SHA_WINDOWS_AMD64 $SHA_WINDOWS_ARM64'
 
 cd "$BUCKET_DIR"
-if git diff --quiet; then
+git add bucket/aide.json
+if git diff --cached --quiet; then
   echo "  Manifest unchanged (version $VERSION already published)"
 else
   git config user.email "ci@accreation.com"

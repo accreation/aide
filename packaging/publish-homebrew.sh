@@ -23,7 +23,8 @@ mkdir -p "$TAP_DIR/Formula"
 render_template "$SCRIPT_DIR/homebrew/aide.rb.tmpl" "$TAP_DIR/Formula/aide.rb"
 
 cd "$TAP_DIR"
-if git diff --quiet; then
+git add Formula/aide.rb
+if git diff --cached --quiet; then
   echo "  Formula unchanged (version $VERSION already published)"
 else
   git config user.email "ci@accreation.com"
