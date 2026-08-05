@@ -216,3 +216,14 @@ yarn:
   linux:
     - apt: yarn
     - dnf: yarn
+
+helm:
+  windows:
+    - winget: Helm.Helm
+    - scoop: helm
+    - choco: kubernetes-helm
+  macos:
+    - brew: helm
+  linux:
+    - apt: helm
+    - dnf: helm
