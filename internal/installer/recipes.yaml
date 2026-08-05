@@ -186,3 +186,12 @@ aws:
   arch_map:
     amd64: x86_64
     arm64: aarch64
+
+gcloud:
+  windows:
+    - winget: Google.GoogleCloudSDK
+    - scoop: gcloud
+  macos:
+    - brew: google-cloud-sdk
+  linux:
+    - curl: "https://sdk.cloud.google.com | bash"
