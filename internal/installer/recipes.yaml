@@ -100,3 +100,13 @@ bun:
     - brew: oven-sh/bun/bun
   linux:
     - curl: "https://bun.sh/install | bash"
+
+deno:
+  windows:
+    - winget: DenoLand.Deno
+    - scoop: deno
+    - choco: deno
+  macos:
+    - brew: deno
+  linux:
+    - curl: "https://deno.land/install.sh | sh"
