@@ -162,3 +162,14 @@ kubectl:
   linux:
     - apt: kubectl
     - dnf: kubectl
+
+terraform:
+  windows:
+    - winget: Hashicorp.Terraform
+    - scoop: terraform
+    - choco: terraform
+  macos:
+    - brew: terraform
+  linux:
+    - apt: terraform
+    - dnf: terraform
