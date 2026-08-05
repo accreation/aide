@@ -123,74 +123,6 @@ jobs:
             aide-*.rpm
           if-no-files-found: error
 
-  # ── Windows NSIS installer ────────────────────────────────────────
-  windows-installer:
-    name: Windows installer
-    runs-on: windows-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download binary
-        uses: actions/download-artifact@v4
-        with:
-          name: aide-windows-amd64
-
-      - name: Extract binary
-        shell: pwsh
-        run: Expand-Archive -Path aide-windows-amd64.exe.zip -DestinationPath .
-
-      - name: Build NSIS installer
-        shell: pwsh
-        run: |
-          choco install nsis -y --no-progress 2>&1 | Out-Null
-          $version = "${{ needs.build.outputs.version }}"
-
-          @"
-          !include "MUI2.nsh"
-
-          Name "Aide"
-          OutFile "aide-${version}-setup-x64.exe"
-          InstallDir "`$LOCALAPPDATA\Programs\Aide"
-          RequestExecutionLevel user
-
-          !insertmacro MUI_PAGE_WELCOME
-          !insertmacro MUI_PAGE_DIRECTORY
-          !insertmacro MUI_PAGE_INSTFILES
-          !insertmacro MUI_PAGE_FINISH
-          !insertmacro MUI_LANGUAGE "English"
-
-          Section "Install"
-            SetOutPath "`$INSTDIR"
-            File "aide-windows-amd64.exe"
-            Rename "`$INSTDIR\aide-windows-amd64.exe" "`$INSTDIR\aide.exe"
-            WriteUninstaller "`$INSTDIR\uninstall.exe"
-
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "DisplayName" "Aide"
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "UninstallString" "`$INSTDIR\uninstall.exe"
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "DisplayVersion" "${version}"
-            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "Publisher" "Aide Maintainers"
-            WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "NoModify" 1
-            WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "NoRepair" 1
-          SectionEnd
-
-          Section "Uninstall"
-            Delete "`$INSTDIR\aide.exe"
-            Delete "`$INSTDIR\uninstall.exe"
-            RMDir "`$INSTDIR"
-            DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide"
-          SectionEnd
-          "@ | Out-File -Encoding ASCII installer.nsi
-
-          makensis installer.nsi
-
-      - name: Upload installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: aide-windows-installer
-          path: aide-*-setup-x64.exe
-          if-no-files-found: error
-
   # ── Checksums ─────────────────────────────────────────────────────
   checksums:
     name: Generate checksums
@@ -206,7 +138,7 @@ jobs:
       - name: Generate SHA256 checksums
         run: |
           cd artifacts
-          find . -type f \( -name '*.tar.gz' -o -name '*.zip' -o -name '*.deb' -o -name '*.rpm' -o -name '*-setup-*.exe' \) \
+          find . -type f \( -name '*.tar.gz' -o -name '*.zip' -o -name '*.deb' -o -name '*.rpm' \) \
             -exec sha256sum {} \; | sort -k2 > "aide_${{ github.ref_name }}_checksums.txt"
 
       - name: Upload checksums
@@ -261,14 +193,11 @@ jobs:
 
             ### 🪟 Windows
             ```
-            # Run the NSIS installer
-            aide-*-setup-x64.exe
-
-            # Or portable — unzip and run
+            # Portable — unzip and run from any folder
             aide-windows-amd64.exe
             ```
             
-            > 💡 **Tip:** Add the install folder to your `PATH` to use `aide` from any terminal.
+            > 💡 **Tip:** Add the folder to your `PATH` to use `aide` from any terminal.
 
             ---
             SHA256 checksums are in `aide_${{ github.ref_name }}_checksums.txt`.
@@ -283,7 +212,6 @@ jobs:
             dist/aide_*_arm64.deb
             dist/aide-*-1.amd64.rpm
             dist/aide-*-1.arm64.rpm
-            dist/aide-*-setup-x64.exe
             dist/aide_*_checksums.txt
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
