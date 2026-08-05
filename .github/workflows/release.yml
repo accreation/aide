@@ -229,7 +229,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        manager: [homebrew, scoop, winget, chocolatey, apt-dnf]
+        manager: [homebrew, scoop, apt-dnf]
+        # TODO: uncomment when ready:
+        # manager: [homebrew, scoop, winget, chocolatey, apt-dnf]
     steps:
       - uses: actions/checkout@v4
 
@@ -249,17 +251,19 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq createrepo-c apt-utils
 
-      - name: Install dependencies (winget)
-        if: matrix.manager == 'winget'
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.x'
+      # TODO: uncomment when winget PR is accepted
+      # - name: Install dependencies (winget)
+      #   if: matrix.manager == 'winget'
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #     dotnet-version: '8.x'
 
-      - name: Install dependencies (chocolatey)
-        if: matrix.manager == 'chocolatey'
-        run: |
-          # Install Mono (required by choco on Linux)
-          sudo apt-get install -y -qq mono-complete
+      # TODO: uncomment when chocolatey API key + first submission done
+      # - name: Install dependencies (chocolatey)
+      #   if: matrix.manager == 'chocolatey'
+      #   run: |
+      #     # Install Mono (required by choco on Linux)
+      #     sudo apt-get install -y -qq mono-complete
 
       - name: Publish (Homebrew)
         if: matrix.manager == 'homebrew'
@@ -277,20 +281,22 @@ jobs:
           SCOOP_BUCKET_DEPLOY_KEY: ${{ secrets.SCOOP_BUCKET_DEPLOY_KEY }}
         run: bash packaging/publish-scoop.sh
 
-      - name: Publish (Winget)
-        if: matrix.manager == 'winget'
-        env:
-          VERSION: ${{ steps.version.outputs.VERSION }}
-          WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
-        run: bash packaging/publish-winget.sh
+      # TODO: uncomment when winget PR is accepted
+      # - name: Publish (Winget)
+      #   if: matrix.manager == 'winget'
+      #   env:
+      #     VERSION: ${{ steps.version.outputs.VERSION }}
+      #     WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
+      #   run: bash packaging/publish-winget.sh
 
-      - name: Publish (Chocolatey)
-        if: matrix.manager == 'chocolatey'
-        env:
-          VERSION: ${{ steps.version.outputs.VERSION }}
-          CHKSUM_FILE: artifacts/aide_*_checksums.txt
-          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
-        run: bash packaging/publish-choco.sh
+      # TODO: uncomment when chocolatey first submission done
+      # - name: Publish (Chocolatey)
+      #   if: matrix.manager == 'chocolatey'
+      #   env:
+      #     VERSION: ${{ steps.version.outputs.VERSION }}
+      #     CHKSUM_FILE: artifacts/aide_*_checksums.txt
+      #     CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+      #   run: bash packaging/publish-choco.sh
 
       - name: Publish (APT/DNF)
         if: matrix.manager == 'apt-dnf'
