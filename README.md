@@ -12,6 +12,8 @@
 <p align="center">
   <a href="https://github.com/accreation/aide/releases"><img src="https://img.shields.io/github/v/release/accreation/aide?color=blue" alt="Release" /></a>
   <a href="https://github.com/accreation/aide/actions"><img src="https://img.shields.io/github/actions/workflow/status/accreation/aide/ci.yml?branch=main" alt="CI" /></a>
+  <a href="go.mod"><img src="https://img.shields.io/github/go-mod/go-version/accreation/aide?logo=go" alt="Go Version" /></a>
+  <a href="https://goreportcard.com/report/github.com/accreation/aide"><img src="https://goreportcard.com/badge/github.com/accreation/aide" alt="Go Report Card" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-green" alt="License: AGPL-3.0" /></a>
   <a href="https://pkg.go.dev/github.com/accreation/aide"><img src="https://img.shields.io/badge/go-reference-blue?logo=go" alt="Go Reference" /></a>
 </p>
