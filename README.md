@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/accreation/aide/main/logo.png" alt="Aide" width="120" />
+  <img src="https://raw.githubusercontent.com/accreation/aide/main/logo.png" alt="Aide" width="200" />
 </p>
 
 <h1 align="center">Aide</h1>
