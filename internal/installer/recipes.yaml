@@ -249,3 +249,14 @@ rg:
   linux:
     - apt: ripgrep
     - dnf: ripgrep
+
+fd:
+  windows:
+    - winget: sharkdp.fd
+    - scoop: fd
+    - choco: fd
+  macos:
+    - brew: fd
+  linux:
+    - apt: fd-find
+    - dnf: fd-find
