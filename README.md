@@ -66,10 +66,21 @@ sudo mv aide-linux-amd64 /usr/local/bin/aide
 
 #### Windows
 ```powershell
-# Download the portable executable
+# One-liner: download and install to %USERPROFILE%\.local\bin\
+powershell -c "irm https://raw.githubusercontent.com/accreation/aide/main/install.ps1 | iex"
+```
+
+Or manually:
+
+```powershell
+# Download and extract
 Invoke-WebRequest -Uri "https://github.com/accreation/aide/releases/latest/download/aide-windows-amd64.exe.zip" -OutFile aide.zip
 Expand-Archive aide.zip -DestinationPath .
-# Add aide.exe to your PATH, or run directly
+# Place the binary in your local bin directory
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.local\bin" | Out-Null
+Move-Item -Path "aide-windows-amd64.exe" -Destination "$env:USERPROFILE\.local\bin\aide.exe" -Force
+# Add to PATH (or restart terminal)
+[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$env:USERPROFILE\.local\bin", "User")
 ```
 
 > 📦 **All releases**: [github.com/accreation/aide/releases](https://github.com/accreation/aide/releases)

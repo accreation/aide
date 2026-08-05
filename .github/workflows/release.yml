@@ -192,12 +192,15 @@ jobs:
             ```
 
             ### 🪟 Windows
+            ```powershell
+            # One-liner installer (recommended)
+            powershell -c "irm https://raw.githubusercontent.com/accreation/aide/main/install.ps1 | iex"
+
+            # Or manually: extract and place in %USERPROFILE%\.local\bin\
+            Invoke-WebRequest -Uri "https://github.com/accreation/aide/releases/latest/download/aide-windows-amd64.exe.zip" -OutFile aide.zip
+            Expand-Archive aide.zip -DestinationPath .
+            Move-Item -Path "aide-windows-amd64.exe" -Destination "$env:USERPROFILE\.local\bin\aide.exe" -Force
             ```
-            # Portable — unzip and run from any folder
-            aide-windows-amd64.exe
-            ```
-            
-            > 💡 **Tip:** Add the folder to your `PATH` to use `aide` from any terminal.
 
             ---
             SHA256 checksums are in `aide_${{ github.ref_name }}_checksums.txt`.
