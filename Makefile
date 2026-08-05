@@ -1,7 +1,8 @@
 .PHONY: build test clean lint build-all
 
 VERSION ?= 0.1.0
-LDFLAGS := -X aide/cmd.Version=$(VERSION)
+RECIPES_URL ?= https://accreation.github.io/aide/recipes.yaml
+LDFLAGS := -X aide/cmd.Version=$(VERSION) -X aide/cmd.DefaultRecipesURL=$(RECIPES_URL)
 
 BINARY := aide
 ifeq ($(OS),Windows_NT)

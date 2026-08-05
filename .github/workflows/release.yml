@@ -44,7 +44,7 @@ jobs:
           BINARY="aide-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
           go build \
             -trimpath \
-            -ldflags "-s -w -X aide/cmd.Version=${{ steps.version.outputs.VERSION }}" \
+            -ldflags "-s -w -X aide/cmd.Version=${{ steps.version.outputs.VERSION }} -X aide/cmd.DefaultRecipesURL=https://accreation.github.io/aide/recipes.yaml" \
             -o "$BINARY" \
             .
           echo "BINARY=$BINARY" >> $GITHUB_ENV

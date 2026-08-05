@@ -16,6 +16,12 @@ import (
 // Version is set via ldflags at build time: -X aide/cmd.Version=1.0.0
 var Version = "dev"
 
+// DefaultRecipesURL is set via ldflags at build time: -X aide/cmd.DefaultRecipesURL=https://...
+// When set, the CLI fetches remote recipes automatically without --recipes-url flag.
+var DefaultRecipesURL = ""
+
+var recipesURL string
+
 var rootCmd = &cobra.Command{
 	Use:     "aide",
 	Version: Version,
@@ -29,6 +35,14 @@ Without subcommands, aide runs a check and exits with code 0 if everything is ok
 
 func Execute() error {
 	return rootCmd.Execute()
+}
+
+func init() {
+	rootCmd.PersistentFlags().StringVar(&recipesURL, "recipes-url", "", "URL to fetch external recipes from (env: AIDE_RECIPES_URL)")
+	// If no flag or env, use the build-time default (if set via ldflags).
+	if recipesURL == "" && DefaultRecipesURL != "" {
+		recipesURL = DefaultRecipesURL
+	}
 }
 
 func runCheck(cmd *cobra.Command, args []string) error {

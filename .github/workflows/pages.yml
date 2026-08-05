@@ -1,0 +1,44 @@
+name: Deploy Recipes to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'internal/installer/recipes.yaml'
+  workflow_dispatch:  # manual trigger for ad-hoc updates
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy recipes.yaml to Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare deploy directory
+        run: |
+          mkdir -p _site
+          cp internal/installer/recipes.yaml _site/recipes.yaml
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

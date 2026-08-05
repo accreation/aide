@@ -51,6 +51,21 @@ func resolveTemplates(value string, archMap map[string]string) string {
 	return replacer.Replace(value)
 }
 
+// LoadRecipesWithRemote fetches remote recipes (if URL is set), then loads
+// default embedded recipes, merging external/remote entries on top.
+// Priority (highest to lowest): remote > external file > embedded.
+func LoadRecipesWithRemote(remoteURL string) (map[string]Recipe, error) {
+	externalFile := ""
+	if remoteURL != "" {
+		var err error
+		externalFile, err = FetchRemoteRecipes(remoteURL)
+		if err != nil {
+			return nil, fmt.Errorf("fetching remote recipes: %w", err)
+		}
+	}
+	return LoadRecipes(externalFile)
+}
+
 // LoadRecipes loads default embedded recipes, then merges external file if provided.
 // External entries override embedded ones with the same tool name.
 func LoadRecipes(externalFile string) (map[string]Recipe, error) {
