@@ -195,3 +195,13 @@ gcloud:
     - brew: google-cloud-sdk
   linux:
     - curl: "https://sdk.cloud.google.com | bash"
+
+pnpm:
+  windows:
+    - winget: pnpm.pnpm
+    - scoop: pnpm
+    - choco: pnpm
+  macos:
+    - brew: pnpm
+  linux:
+    - curl: "https://get.pnpm.io/install.sh | sh -"
