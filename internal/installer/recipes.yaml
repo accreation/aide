@@ -121,3 +121,12 @@ go:
   linux:
     - apt: golang-go
     - dnf: golang
+
+rustup:
+  windows:
+    - winget: Rustlang.Rustup
+    - scoop: rustup
+  macos:
+    - curl: "https://sh.rustup.rs | sh -s -- -y"
+  linux:
+    - curl: "https://sh.rustup.rs | sh -s -- -y"
