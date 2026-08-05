@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"aide/internal/account"
 )
@@ -68,13 +69,28 @@ func applyCopilotAccount(acc account.Account) error {
 }
 
 func applyClaudeAccount(acc account.Account, cmd *exec.Cmd) error {
-	// Set ANTHROPIC_API_KEY for the child process
-	cmd.Env = append(os.Environ(), "ANTHROPIC_API_KEY="+acc.APIKey)
+	cmd.Env = replaceEnv(os.Environ(), "ANTHROPIC_API_KEY", acc.APIKey)
 	return nil
 }
 
 func applyCodexAccount(acc account.Account, cmd *exec.Cmd) error {
-	// Set CODEX_HOME for the child process
-	cmd.Env = append(os.Environ(), "CODEX_HOME="+acc.CodexHome)
+	cmd.Env = replaceEnv(os.Environ(), "CODEX_HOME", acc.CodexHome)
 	return nil
+}
+
+// replaceEnv builds a new env slice, replacing the target variable if it already exists.
+func replaceEnv(env []string, key, value string) []string {
+	prefix := key + "="
+	replaced := false
+	for i, e := range env {
+		if strings.HasPrefix(e, prefix) {
+			env[i] = prefix + value
+			replaced = true
+			break
+		}
+	}
+	if !replaced {
+		env = append(env, prefix+value)
+	}
+	return env
 }
