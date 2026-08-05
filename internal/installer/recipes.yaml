@@ -110,3 +110,14 @@ deno:
     - brew: deno
   linux:
     - curl: "https://deno.land/install.sh | sh"
+
+go:
+  windows:
+    - winget: GoLang.Go
+    - scoop: go
+    - choco: golang
+  macos:
+    - brew: go
+  linux:
+    - apt: golang-go
+    - dnf: golang
