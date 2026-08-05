@@ -44,20 +44,21 @@ aide.yaml   →   [Check]   →   [Install missing]   →   [Launch AI provider]
 
 ### 1. Install Aide
 
-#### macOS (Homebrew)
+#### macOS
 ```bash
 brew install accreation/tap/aide
 ```
 
 #### Linux
 ```bash
-# Debian / Ubuntu
-curl -fsSL https://github.com/accreation/aide/releases/latest/download/aide_amd64.deb -o aide.deb
-sudo dpkg -i aide.deb
+# APT (Debian / Ubuntu)
+curl -fsSL https://accreation.github.io/aide-repo/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/aide.gpg
+echo "deb https://accreation.github.io/aide-repo stable main" | sudo tee /etc/apt/sources.list.d/aide.list
+sudo apt update && sudo apt install aide
 
-# Fedora / RHEL
-curl -fsSL https://github.com/accreation/aide/releases/latest/download/aide-1.amd64.rpm -o aide.rpm
-sudo rpm -i aide.rpm
+# DNF (Fedora / RHEL)
+sudo dnf config-manager --add-repo https://accreation.github.io/aide-repo/aide.repo
+sudo dnf install aide
 
 # Portable binary (any distro)
 curl -fsSL https://github.com/accreation/aide/releases/latest/download/aide-linux-amd64.tar.gz | tar -xz
@@ -66,21 +67,18 @@ sudo mv aide-linux-amd64 /usr/local/bin/aide
 
 #### Windows
 ```powershell
-# One-liner: download and install to %USERPROFILE%\.local\bin\
+# Winget
+winget install Accreation.Aide
+
+# Chocolatey
+choco install aide
+
+# Scoop
+scoop bucket add accreation https://github.com/accreation/scoop-bucket
+scoop install aide
+
+# One-liner installer (recommended if no package manager)
 powershell -c "irm https://raw.githubusercontent.com/accreation/aide/main/install.ps1 | iex"
-```
-
-Or manually:
-
-```powershell
-# Download and extract
-Invoke-WebRequest -Uri "https://github.com/accreation/aide/releases/latest/download/aide-windows-amd64.exe.zip" -OutFile aide.zip
-Expand-Archive aide.zip -DestinationPath .
-# Place the binary in your local bin directory
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.local\bin" | Out-Null
-Move-Item -Path "aide-windows-amd64.exe" -Destination "$env:USERPROFILE\.local\bin\aide.exe" -Force
-# Add to PATH (or restart terminal)
-[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";$env:USERPROFILE\.local\bin", "User")
 ```
 
 > 📦 **All releases**: [github.com/accreation/aide/releases](https://github.com/accreation/aide/releases)
