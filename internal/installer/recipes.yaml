@@ -130,3 +130,14 @@ rustup:
     - curl: "https://sh.rustup.rs | sh -s -- -y"
   linux:
     - curl: "https://sh.rustup.rs | sh -s -- -y"
+
+java:
+  windows:
+    - winget: EclipseAdoptium.Temurin.21.JDK
+    - scoop: temurin21-jdk
+    - choco: temurin
+  macos:
+    - brew: openjdk
+  linux:
+    - apt: default-jdk
+    - dnf: java-21-openjdk
