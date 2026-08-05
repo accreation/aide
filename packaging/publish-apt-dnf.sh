@@ -13,8 +13,14 @@ fi
 
 # ── Clone aide-repo gh-pages ────────────────────────────────────────
 REPO_DIR=$(mktemp -d)
+# Write deploy key to temp file for SSH auth
+GIT_SSH_KEY=$(mktemp)
+echo "$AIDE_REPO_DEPLOY_KEY" > "$GIT_SSH_KEY"
+chmod 600 "$GIT_SSH_KEY"
+export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY -o StrictHostKeyChecking=accept-new"
 git clone --depth 1 --branch gh-pages \
-  "https://x-access-token:${AIDE_REPO_DEPLOY_KEY}@github.com/accreation/aide-repo.git" "$REPO_DIR"
+  "git@github.com:accreation/aide-repo.git" "$REPO_DIR"
+rm -f "$GIT_SSH_KEY"
 
 # ── Download .deb packages from GitHub Release ──────────────────────
 DEB_AMD64_URL="https://github.com/accreation/aide/releases/download/v${VERSION}/aide_${VERSION}_amd64.deb"
@@ -31,7 +37,7 @@ curl -fsSL "$DEB_ARM64_URL" -o "$REPO_DIR/pool/main/a/aide/aide_${VERSION}_arm64
 mkdir -p "$REPO_DIR/dists/stable/main/binary-amd64"
 mkdir -p "$REPO_DIR/dists/stable/main/binary-arm64"
 
-apt-ftparchive packages "$REPO_DIR/pool/main" > "$REPO_DIR/dists/stable/main/binary-amd64/Packages"
+(cd "$REPO_DIR" && apt-ftparchive packages pool) > "$REPO_DIR/dists/stable/main/binary-amd64/Packages"
 cp "$REPO_DIR/dists/stable/main/binary-amd64/Packages" "$REPO_DIR/dists/stable/main/binary-arm64/Packages"
 gzip -kf "$REPO_DIR/dists/stable/main/binary-amd64/Packages"
 gzip -kf "$REPO_DIR/dists/stable/main/binary-arm64/Packages"

@@ -14,7 +14,12 @@ source "$SCRIPT_DIR/render.sh" "$CHKSUM_FILE" "$VERSION"
 echo "=== Publishing to Homebrew Tap ==="
 
 TAP_DIR=$(mktemp -d)
-git clone --depth 1 "https://x-access-token:${HOMEBREW_TAP_DEPLOY_KEY}@github.com/accreation/homebrew-tap.git" "$TAP_DIR"
+GIT_SSH_KEY=$(mktemp)
+echo "$HOMEBREW_TAP_DEPLOY_KEY" > "$GIT_SSH_KEY"
+chmod 600 "$GIT_SSH_KEY"
+export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY -o StrictHostKeyChecking=accept-new"
+git clone --depth 1 "git@github.com:accreation/homebrew-tap.git" "$TAP_DIR"
+rm -f "$GIT_SSH_KEY"
 mkdir -p "$TAP_DIR/Formula"
 render_template "$SCRIPT_DIR/homebrew/aide.rb.tmpl" "$TAP_DIR/Formula/aide.rb"
 

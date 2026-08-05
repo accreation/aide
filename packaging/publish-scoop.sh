@@ -14,9 +14,14 @@ source "$SCRIPT_DIR/render.sh" "$CHKSUM_FILE" "$VERSION"
 echo "=== Publishing to Scoop Bucket ==="
 
 BUCKET_DIR=$(mktemp -d)
-git clone --depth 1 "https://x-access-token:${SCOOP_BUCKET_DEPLOY_KEY}@github.com/accreation/scoop-bucket.git" "$BUCKET_DIR"
+GIT_SSH_KEY=$(mktemp)
+echo "$SCOOP_BUCKET_DEPLOY_KEY" > "$GIT_SSH_KEY"
+chmod 600 "$GIT_SSH_KEY"
+export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY -o StrictHostKeyChecking=accept-new"
+git clone --depth 1 "git@github.com:accreation/scoop-bucket.git" "$BUCKET_DIR"
+rm -f "$GIT_SSH_KEY"
 mkdir -p "$BUCKET_DIR/bucket"
-render_template "$SCRIPT_DIR/scoop/aide.json.tmpl" "$BUCKET_DIR/bucket/aide.json"
+render_template "$SCRIPT_DIR/scoop/aide.json.tmpl" "$BUCKET_DIR/bucket/aide.json" '$VERSION $SHA_WINDOWS_AMD64 $SHA_WINDOWS_ARM64'
 
 cd "$BUCKET_DIR"
 if git diff --quiet; then

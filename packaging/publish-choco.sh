@@ -22,11 +22,13 @@ render_template "$SCRIPT_DIR/chocolatey/tools/chocolateyInstall.ps1.tmpl" "$BUIL
 cd "$BUILD_DIR"
 choco pack aide.nuspec --outputdirectory .
 
-# Push (skip if dev/test)
-if [[ "${DRY_RUN:-0}" = "1" ]]; then
+# Skip if version already exists on the feed (idempotent)
+if choco search aide --version "$VERSION" --exact --source https://community.chocolatey.org/api/v2/ 2>/dev/null | grep -q "$VERSION"; then
+  echo "  Package aide $VERSION already on Chocolatey feed, skipping push"
+elif [[ "${DRY_RUN:-0}" = "1" ]]; then
   echo "  DRY_RUN: skipping choco push"
 else
-  choco push aide.${VERSION}.nupkg --api-key "$CHOCOLATEY_API_KEY" --source https://push.chocolatey.org/
+  choco push "aide.${VERSION}.nupkg" --api-key "$CHOCOLATEY_API_KEY" --source https://push.chocolatey.org/
   echo "  OK  Chocolatey package $VERSION pushed"
 fi
 
