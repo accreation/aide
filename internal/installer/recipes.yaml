@@ -91,3 +91,12 @@ nodejs:
   linux:
     - apt: nodejs
     - dnf: nodejs
+
+bun:
+  windows:
+    - winget: Oven-sh.Bun
+    - scoop: bun
+  macos:
+    - brew: oven-sh/bun/bun
+  linux:
+    - curl: "https://bun.sh/install | bash"
