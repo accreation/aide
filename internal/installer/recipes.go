@@ -98,7 +98,7 @@ func ResolvePM(tool string, recipes map[string]Recipe) (string, []string, error)
 	}
 	for _, entry := range entries {
 		for pm, pkg := range entry {
-			if pmAvailable(pm) {
+			if pm == "github" || pmAvailable(pm) {
 				resolved := resolveTemplates(pkg, recipe.ArchMap)
 				return pm, buildInstallArgs(pm, resolved), nil
 			}

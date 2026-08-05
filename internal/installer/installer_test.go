@@ -37,10 +37,10 @@ func TestInstallGithubDispatch(t *testing.T) {
 	// reach the github codepath (not fall through to default exec).
 	err := inst.Install("mytool")
 	if err == nil {
-		t.Skip("unexpected success — no real GitHub release")
+		t.Fatal("expected error — github dispatch should attempt a real fetch")
 	}
 	// Error should be from github fetch, not from exec.LookPath
 	if !strings.Contains(err.Error(), "fetching release") && !strings.Contains(err.Error(), "downloading") {
-		t.Logf("install error (expected github-related): %v", err)
+		t.Fatalf("expected github-related error, got: %v", err)
 	}
 }
