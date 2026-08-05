@@ -53,6 +53,10 @@ func matchAsset(assets []githubAsset, pattern string) (githubAsset, bool) {
 	return githubAsset{}, false
 }
 
+// githubAPIBaseURL is the base URL of the GitHub API. Tests override it to
+// point at a mock server.
+var githubAPIBaseURL = "https://api.github.com"
+
 // installFromGithub downloads a binary from GitHub Releases, extracts if needed,
 // and places it in the user's local bin directory.
 func installFromGithub(ownerRepo, assetPattern, binaryName string) error {
@@ -62,7 +66,7 @@ func installFromGithub(ownerRepo, assetPattern, binaryName string) error {
 	}
 	owner, repo := parts[0], parts[1]
 
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", githubAPIBaseURL, owner, repo)
 
 	client := &http.Client{Timeout: 30 * time.Second}
 

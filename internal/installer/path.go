@@ -9,8 +9,15 @@ import (
 	"strings"
 )
 
+// binDirOverride allows tests to override the bin directory returned by
+// getBinDir. When set, PATH mutation in ensureInPath is skipped as well.
+var binDirOverride string
+
 // getBinDir returns the user-local bin directory path.
 func getBinDir() (string, error) {
+	if binDirOverride != "" {
+		return binDirOverride, nil
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("getting home dir: %w", err)
@@ -20,6 +27,10 @@ func getBinDir() (string, error) {
 
 // ensureInPath adds binDir to the user's PATH if not already present.
 func ensureInPath(binDir string) error {
+	if binDirOverride != "" {
+		// The bin dir is overridden for testing; don't touch the real PATH.
+		return nil
+	}
 	if isInPath(binDir) {
 		return nil
 	}
