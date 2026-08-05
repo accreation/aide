@@ -31,6 +31,11 @@ func (i *Installer) Install(toolName string) error {
 		// curl recipes pipe to bash — need shell
 		pkg := strings.Join(args, " ")
 		cmd = exec.Command("bash", "-c", fmt.Sprintf("curl -fsSL %s", pkg))
+	} else if pm == "github" {
+		if len(args) < 3 {
+			return fmt.Errorf("invalid github recipe for %s: expected 'owner/repo asset binary'", toolName)
+		}
+		return installFromGithub(args[0], args[1], args[2])
 	} else {
 		cmd = exec.Command(pm, args...)
 	}

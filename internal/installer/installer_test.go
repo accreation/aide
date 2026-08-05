@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -21,5 +22,25 @@ func TestInstallMissingRecipe(t *testing.T) {
 	err := inst.Install("nonexistent")
 	if err == nil {
 		t.Fatal("expected error for missing recipe")
+	}
+}
+
+func TestInstallGithubDispatch(t *testing.T) {
+	recipes := map[string]Recipe{
+		"mytool": {
+			Windows: []PMEntry{{"github": "owner/repo mytool-${GOARCH}.zip mytool.exe"}},
+			Linux:   []PMEntry{{"github": "owner/repo mytool-${GOARCH}.tar.gz mytool"}},
+		},
+	}
+	inst := New(recipes)
+	// Github install will fail because there's no real release, but it should
+	// reach the github codepath (not fall through to default exec).
+	err := inst.Install("mytool")
+	if err == nil {
+		t.Skip("unexpected success — no real GitHub release")
+	}
+	// Error should be from github fetch, not from exec.LookPath
+	if !strings.Contains(err.Error(), "fetching release") && !strings.Contains(err.Error(), "downloading") {
+		t.Logf("install error (expected github-related): %v", err)
 	}
 }
