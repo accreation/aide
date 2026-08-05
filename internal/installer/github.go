@@ -83,7 +83,7 @@ func installFromGithub(ownerRepo, assetPattern, binaryName string) error {
 	fmt.Printf("  Downloading %s from %s...\n", asset.Name, release.TagName)
 
 	// Download asset to temp file
-	tmpDir, err := os.MkdirTemp("", "aion-dl-*")
+	tmpDir, err := os.MkdirTemp("", "aide-dl-*")
 	if err != nil {
 		return fmt.Errorf("creating temp dir: %w", err)
 	}

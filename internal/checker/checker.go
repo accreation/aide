@@ -4,9 +4,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"aion/internal/config"
-	"aion/internal/display"
-	"aion/internal/semver"
+	"aide/internal/config"
+	"aide/internal/display"
+	"aide/internal/semver"
 )
 
 type Checker struct {

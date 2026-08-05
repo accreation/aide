@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Provider string `yaml:"provider"`
+	Args     string `yaml:"args,omitempty"`
 	Tools    []Tool `yaml:"tools"`
 }
 
@@ -18,12 +19,12 @@ type Tool struct {
 	Version string `yaml:"version,omitempty"`
 }
 
-// FindPath looks for aion.yaml starting at startDir and walking up to root.
+// FindPath looks for aide.yaml starting at startDir and walking up to root.
 // Returns the full path to the file, or error if not found.
 func FindPath(startDir string) (string, error) {
 	dir := startDir
 	for {
-		path := filepath.Join(dir, "aion.yaml")
+		path := filepath.Join(dir, "aide.yaml")
 		if _, err := os.Stat(path); err == nil {
 			return path, nil
 		} else if !os.IsNotExist(err) {
@@ -31,18 +32,18 @@ func FindPath(startDir string) (string, error) {
 		}
 		parent := filepath.Dir(dir)
 		if parent == dir {
-			return "", fmt.Errorf("aion.yaml not found (searched from %s upward)", startDir)
+			return "", fmt.Errorf("aide.yaml not found (searched from %s upward)", startDir)
 		}
 		dir = parent
 	}
 }
 
-// FindAndParse looks for aion.yaml starting at startDir and walking up to root.
+// FindAndParse looks for aide.yaml starting at startDir and walking up to root.
 // Returns parsed Config or error if not found / invalid.
 func FindAndParse(startDir string) (*Config, error) {
 	dir := startDir
 	for {
-		path := filepath.Join(dir, "aion.yaml")
+		path := filepath.Join(dir, "aide.yaml")
 		data, err := os.ReadFile(path)
 		if err == nil {
 			return parse(data)
@@ -52,13 +53,13 @@ func FindAndParse(startDir string) (*Config, error) {
 		}
 		parent := filepath.Dir(dir)
 		if parent == dir {
-			return nil, fmt.Errorf("aion.yaml not found (searched from %s upward)", startDir)
+			return nil, fmt.Errorf("aide.yaml not found (searched from %s upward)", startDir)
 		}
 		dir = parent
 	}
 }
 
-// GenerateDefault returns a default Config for aion init.
+// GenerateDefault returns a default Config for aide init.
 func GenerateDefault(provider string) *Config {
 	return &Config{
 		Provider: provider,
@@ -69,10 +70,10 @@ func GenerateDefault(provider string) *Config {
 func parse(data []byte) (*Config, error) {
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("parsing aion.yaml: %w", err)
+		return nil, fmt.Errorf("parsing aide.yaml: %w", err)
 	}
 	if cfg.Provider == "" {
-		return nil, fmt.Errorf("aion.yaml: 'provider' is required")
+		return nil, fmt.Errorf("aide.yaml: 'provider' is required")
 	}
 	return &cfg, nil
 }

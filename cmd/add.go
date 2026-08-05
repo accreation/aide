@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"aion/internal/config"
-	"aion/internal/semver"
+	"aide/internal/config"
+	"aide/internal/semver"
 
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
@@ -17,16 +17,16 @@ var addVersion string
 
 var addCmd = &cobra.Command{
 	Use:   "add <tool-name>",
-	Short: "Add a tool to aion.yaml",
-	Long: `Adds a tool to the aion.yaml config file.
+	Short: "Add a tool to aide.yaml",
+	Long: `Adds a tool to the aide.yaml config file.
 
 If --version is provided, it is used directly.
 If not, aion detects the currently installed version and pins it with >= constraint.
 If the tool is not installed, it is added without a version constraint.
 
 Examples:
-  aion add glab
-  aion add gh --version ">=2.0.0"`,
+  aide add glab
+  aide add gh --version ">=2.0.0"`,
 	Args: cobra.ExactArgs(1),
 	RunE: runAdd,
 }
@@ -43,10 +43,10 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting current directory: %w", err)
 	}
 
-	// Find aion.yaml
+	// Find aide.yaml
 	cfgPath, err := config.FindPath(cwd)
 	if err != nil {
-		return fmt.Errorf("aion.yaml not found — run 'aion init' first: %w", err)
+		return fmt.Errorf("aide.yaml not found — run 'aide init' first: %w", err)
 	}
 
 	// Read current config
@@ -71,7 +71,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 	for i, t := range cfg.Tools {
 		if t.Name == toolName {
 			if t.Version == version {
-				fmt.Printf("Tool %q is already in aion.yaml with the same version (%s)\n", toolName, version)
+				fmt.Printf("Tool %q is already in aide.yaml with the same version (%s)\n", toolName, version)
 				return nil
 			}
 			cfg.Tools[i].Version = version

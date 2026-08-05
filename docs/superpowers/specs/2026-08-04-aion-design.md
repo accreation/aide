@@ -1,15 +1,15 @@
-# Aion — AI Environment Manager
+# Aide — AI Environment Manager
 
 ## Overview
 
-**Aion** — CLI-инструмент на Go, который управляет AI-окружением разработчика через декларативный конфиг `aion.yaml`. Проверяет наличие провайдера (Claude, Copilot, Codex, и т.д.) и всех необходимых инструментов, устанавливает недостающее, и запускает AI-провайдера.
+**Aide** — CLI-инструмент на Go, который управляет AI-окружением разработчика через декларативный конфиг `aide.yaml`. Проверяет наличие провайдера (Claude, Copilot, Codex, и т.д.) и всех необходимых инструментов, устанавливает недостающее, и запускает AI-провайдера.
 
-Аналог `package.json` для AI-окружения: один конфиг описывает, что должно быть установлено, а Aion приводит систему в соответствие.
+Аналог `package.json` для AI-окружения: один конфиг описывает, что должно быть установлено, а Aide приводит систему в соответствие.
 
 ## Architecture
 
 ```
-aion.yaml  →  [Parser]  →  [Checker]  →  [Installer]  →  [Launcher]
+aide.yaml  →  [Parser]  →  [Checker]  →  [Installer]  →  [Launcher]
                   ↑              ↑
              recipes.yaml   recipes.yaml
 ```
@@ -18,7 +18,7 @@ aion.yaml  →  [Parser]  →  [Checker]  →  [Installer]  →  [Launcher]
 
 | Component  | Responsibility |
 |------------|---------------|
-| **Parser** | Читает и валидирует `aion.yaml`. Возвращает структуру с provider + tools. |
+| **Parser** | Читает и валидирует `aide.yaml`. Возвращает структуру с provider + tools. |
 | **Checker** | Проверяет наличие провайдера и тулзов в PATH, сравнивает версии через semver-constraints. |
 | **Installer** | По `recipes.yaml` определяет способ установки под текущую ОС и доступные пакетные менеджеры. |
 | **Launcher** | Запускает провайдера командой оболочки. |
@@ -27,7 +27,7 @@ aion.yaml  →  [Parser]  →  [Checker]  →  [Installer]  →  [Launcher]
 
 ## Configuration Format
 
-### `aion.yaml`
+### `aide.yaml`
 
 ```yaml
 provider: claude
@@ -83,16 +83,16 @@ az:
 ## CLI Interface
 
 ```bash
-aion                    # check: проверка окружения
-aion check              # явный check
-aion install            # установка недостающего
-aion i                  # алиас для install
-aion init               # создаёт aion.yaml в текущей директории
+aide                    # check: проверка окружения
+aide check              # явный check
+aide install            # установка недостающего
+aide i                  # алиас для install
+aide init               # создаёт aide.yaml в текущей директории
 ```
 
 ### Flow
 
-1. Найти `aion.yaml` — текущая директория, затем вверх по дереву (как `.git`)
+1. Найти `aide.yaml` — текущая директория, затем вверх по дереву (как `.git`)
 2. Распарсить и провалидировать
 3. Проверить provider (установлен ли бинарник)
 4. Проверить каждый tool: есть ли в PATH, соответствует ли версия
@@ -120,7 +120,7 @@ aion init               # создаёт aion.yaml в текущей дирек�
 
 | Scenario | Behavior |
 |----------|----------|
-| `aion.yaml` не найден | Сообщение + предложение `aion init` |
+| `aide.yaml` не найден | Сообщение + предложение `aide init` |
 | Невалидный YAML | Указать строку и проблему |
 | `version` не парсится как semver | Предупредить, предложить корректный формат |
 | Tool/provider не установлен | Check: рапорт. Install: попытка установки |
@@ -132,7 +132,7 @@ aion init               # создаёт aion.yaml в текущей дирек�
 
 - **Unit tests**: parser, semver comparison, recipe resolver (с моком OS/менеджеров)
 - **Integration tests**: Docker-контейнеры под Linux, полный цикл `check` + `install`
-- **Smoke test**: `go build && ./aion check` на тестовом `aion.yaml`
+- **Smoke test**: `go build && ./aide check` на тестовом `aide.yaml`
 
 ## Tech Stack
 
@@ -144,5 +144,5 @@ aion init               # создаёт aion.yaml в текущей дирек�
 
 - Установка рантаймов (go, node, python)
 - Переменные окружения в конфиге
-- Кастомные скрипты установки в `aion.yaml`
+- Кастомные скрипты установки в `aide.yaml`
 - Конфигурация/интеграция с провайдером (только запуск)

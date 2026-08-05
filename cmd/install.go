@@ -3,12 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
-	"aion/internal/checker"
-	"aion/internal/config"
-	"aion/internal/display"
-	"aion/internal/installer"
-	"aion/internal/launcher"
+	"aide/internal/checker"
+	"aide/internal/config"
+	"aide/internal/display"
+	"aide/internal/installer"
+	"aide/internal/launcher"
 
 	"github.com/spf13/cobra"
 )
@@ -34,7 +35,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	cfg, err := config.FindAndParse(cwd)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
-		fmt.Fprintln(os.Stderr, "Tip: run 'aion init' to create aion.yaml")
+		fmt.Fprintln(os.Stderr, "Tip: run 'aide init' to create aide.yaml")
 		os.Exit(1)
 	}
 
@@ -73,7 +74,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	providerResult = chk.CheckProvider()
 	toolResults = chk.CheckTools()
 
-	fmt.Println("\nAion — final check")
+	fmt.Println("\nAide — final check")
 	fmt.Println("──────────────────")
 	display.PrintProviderResult(os.Stdout, providerResult)
 	display.PrintToolResults(os.Stdout, toolResults)
@@ -85,5 +86,6 @@ func runInstall(cmd *cobra.Command, args []string) error {
 
 	fmt.Println("\nLaunching provider...")
 	l := &launcher.Launcher{}
-	return l.Launch(cfg.Provider)
+	extraArgs := strings.Fields(cfg.Args)
+	return l.Launch(cfg.Provider, extraArgs...)
 }

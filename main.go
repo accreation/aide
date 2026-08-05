@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"aion/cmd"
+	"aide/cmd"
 )
 
 func main() {

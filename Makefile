@@ -1,11 +1,11 @@
 .PHONY: build test clean lint build-all
 
 VERSION ?= 0.1.0
-LDFLAGS := -X aion/cmd.Version=$(VERSION)
+LDFLAGS := -X aide/cmd.Version=$(VERSION)
 
-BINARY := aion
+BINARY := aide
 ifeq ($(OS),Windows_NT)
-	BINARY := aion.exe
+	BINARY := aide.exe
 endif
 
 build:
@@ -21,7 +21,7 @@ lint:
 	go vet ./internal/...
 
 clean:
-	rm -f aion aion.exe
+	rm -f aide aide.exe
 
 fmt:
 	go fmt ./internal/... ./cmd/...
@@ -30,7 +30,7 @@ dist:
 	mkdir -p dist
 
 build-all: dist
-	GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/aion-windows-amd64.exe .
-	GOOS=darwin GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/aion-darwin-amd64 .
-	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/aion-darwin-arm64 .
-	GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/aion-linux-amd64 .
+	GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/aide-windows-amd64.exe .
+	GOOS=darwin GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/aide-darwin-amd64 .
+	GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/aide-darwin-arm64 .
+	GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/aide-linux-amd64 .

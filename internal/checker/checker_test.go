@@ -3,8 +3,8 @@ package checker
 import (
 	"testing"
 
-	"aion/internal/config"
-	"aion/internal/display"
+	"aide/internal/config"
+	"aide/internal/display"
 )
 
 func TestCheckProviderFound(t *testing.T) {

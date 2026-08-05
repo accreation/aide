@@ -14,7 +14,7 @@ tools:
     version: ">=2.0.0"
   - name: az
 `
-	os.WriteFile(filepath.Join(tmp, "aion.yaml"), []byte(content), 0644)
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
 
 	cfg, err := FindAndParse(tmp)
 	if err != nil {
@@ -22,6 +22,9 @@ tools:
 	}
 	if cfg.Provider != "claude" {
 		t.Errorf("expected provider 'claude', got %q", cfg.Provider)
+	}
+	if cfg.Args != "" {
+		t.Errorf("expected empty args, got %q", cfg.Args)
 	}
 	if len(cfg.Tools) != 2 {
 		t.Fatalf("expected 2 tools, got %d", len(cfg.Tools))
@@ -34,6 +37,26 @@ tools:
 	}
 }
 
+func TestParseConfigWithArgs(t *testing.T) {
+	tmp := t.TempDir()
+	content := `provider: claude
+args: --permission-mode auto
+tools: []
+`
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
+
+	cfg, err := FindAndParse(tmp)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Provider != "claude" {
+		t.Errorf("expected provider 'claude', got %q", cfg.Provider)
+	}
+	if cfg.Args != "--permission-mode auto" {
+		t.Errorf("expected args '--permission-mode auto', got %q", cfg.Args)
+	}
+}
+
 func TestWalkUpFindsConfig(t *testing.T) {
 	tmp := t.TempDir()
 	sub := filepath.Join(tmp, "a", "b", "c")
@@ -41,7 +64,7 @@ func TestWalkUpFindsConfig(t *testing.T) {
 	content := `provider: codex
 tools: []
 `
-	os.WriteFile(filepath.Join(tmp, "aion.yaml"), []byte(content), 0644)
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
 
 	cfg, err := FindAndParse(sub)
 	if err != nil {

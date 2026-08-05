@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"aion/internal/config"
+	"aide/internal/config"
 
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
@@ -14,8 +14,8 @@ var initProvider string
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Create aion.yaml in the current directory",
-	Long:  "Generates a default aion.yaml with the specified provider.",
+	Short: "Create aide.yaml in the current directory",
+	Long:  "Generates a default aide.yaml with the specified provider.",
 	RunE:  runInit,
 }
 
@@ -25,7 +25,7 @@ func init() {
 }
 
 func runInit(cmd *cobra.Command, args []string) error {
-	path := "aion.yaml"
+	path := "aide.yaml"
 	if _, err := os.Stat(path); err == nil {
 		return fmt.Errorf("%s already exists", path)
 	}
@@ -41,6 +41,6 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("Created %s with provider: %s\n", path, initProvider)
-	fmt.Println("Add your tools to the 'tools' list, then run 'aion check'.")
+	fmt.Println("Add your tools to the 'tools' list, then run 'aide check'.")
 	return nil
 }

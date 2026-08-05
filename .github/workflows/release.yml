@@ -1,0 +1,283 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Build binaries for all platforms ──────────────────────────────
+  build:
+    name: Build (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { goos: linux,   goarch: amd64,  ext: '' }
+          - { goos: linux,   goarch: arm64,  ext: '' }
+          - { goos: darwin,  goarch: amd64,  ext: '' }
+          - { goos: darwin,  goarch: arm64,  ext: '' }
+          - { goos: windows, goarch: amd64,  ext: '.exe' }
+          - { goos: windows, goarch: arm64,  ext: '.exe' }
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          BINARY="aide-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
+          go build \
+            -trimpath \
+            -ldflags "-s -w -X aide/cmd.Version=${{ steps.version.outputs.VERSION }}" \
+            -o "$BINARY" \
+            .
+          echo "BINARY=$BINARY" >> $GITHUB_ENV
+
+      - name: Package (tar.gz — Linux / macOS)
+        if: matrix.goos != 'windows'
+        run: tar -czf "${BINARY}.tar.gz" "$BINARY"
+
+      - name: Package (zip — Windows)
+        if: matrix.goos == 'windows'
+        run: zip "${BINARY}.zip" "$BINARY"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aide-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: aide-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.*
+          if-no-files-found: error
+
+  # ── Linux packages (.deb / .rpm via nfpm) ────────────────────────
+  linux-packages:
+    name: Linux packages (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: aide-linux-${{ matrix.arch }}
+
+      - name: Install nfpm
+        run: |
+          echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq nfpm
+
+      - name: Build .deb and .rpm
+        run: |
+          VERSION="${{ needs.build.outputs.version }}"
+          cat > nfpm.yaml << NFPMEOF
+          name: aide
+          arch: "${{ matrix.arch == 'amd64' && 'amd64' || 'arm64' }}"
+          platform: linux
+          version: "${VERSION}"
+          section: utils
+          priority: optional
+          maintainer: "Aide Maintainers"
+          description: |
+            AI environment manager — check and install tools for your AI provider.
+            Reads aide.yaml and verifies that your AI provider and all required
+            tools are installed with correct versions.
+          homepage: "https://github.com/${{ github.repository }}"
+          license: MIT
+          contents:
+            - src: aide-linux-${{ matrix.arch }}
+              dst: /usr/local/bin/aide
+          NFPMEOF
+
+          nfpm package --packager deb --target "aide_${VERSION}_${{ matrix.arch }}.deb"
+          nfpm package --packager rpm --target "aide-${VERSION}-1.${{ matrix.arch }}.rpm"
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: aide-linux-pkg-${{ matrix.arch }}
+          path: |
+            aide_*.deb
+            aide-*.rpm
+          if-no-files-found: error
+
+  # ── Windows NSIS installer ────────────────────────────────────────
+  windows-installer:
+    name: Windows installer
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: aide-windows-amd64
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: |
+          $version = "${{ needs.build.outputs.version }}"
+
+          @"
+          !include "MUI2.nsh"
+
+          Name "Aide"
+          OutFile "aide-${version}-setup-x64.exe"
+          InstallDir "`$LOCALAPPDATA\Programs\Aide"
+          RequestExecutionLevel user
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_DIRECTORY
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath "`$INSTDIR"
+            File "aide-windows-amd64.exe"
+            Rename "`$INSTDIR\aide-windows-amd64.exe" "`$INSTDIR\aide.exe"
+            WriteUninstaller "`$INSTDIR\uninstall.exe"
+
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "DisplayName" "Aide"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "UninstallString" "`$INSTDIR\uninstall.exe"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "DisplayVersion" "${version}"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "Publisher" "Aide Maintainers"
+            WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "NoModify" 1
+            WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide" "NoRepair" 1
+          SectionEnd
+
+          Section "Uninstall"
+            Delete "`$INSTDIR\aide.exe"
+            Delete "`$INSTDIR\uninstall.exe"
+            RMDir "`$INSTDIR"
+            DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Aide"
+          SectionEnd
+          "@ | Out-File -Encoding ASCII installer.nsi
+
+          & "`${env:ProgramFiles(x86)}\NSIS\makensis.exe" installer.nsi
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: aide-windows-installer
+          path: aide-*-setup-x64.exe
+          if-no-files-found: error
+
+  # ── Checksums ─────────────────────────────────────────────────────
+  checksums:
+    name: Generate checksums
+    runs-on: ubuntu-latest
+    needs: [build, linux-packages, windows-installer]
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd artifacts
+          find . -type f \( -name '*.tar.gz' -o -name '*.zip' -o -name '*.deb' -o -name '*.rpm' -o -name '*-setup-*.exe' \) \
+            -exec sha256sum {} \; | sort -k2 > "aide_${{ github.ref_name }}_checksums.txt"
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: artifacts/aide_*_checksums.txt
+          if-no-files-found: error
+
+  # ── GitHub Release ────────────────────────────────────────────────
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: checksums
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "aide ${{ github.ref_name }}"
+          body: |
+            ## 📦 Installation
+
+            ### 🐧 Linux
+            ```bash
+            # .deb (Debian / Ubuntu)
+            sudo dpkg -i aide_*_amd64.deb
+
+            # .rpm (Fedora / RHEL)
+            sudo rpm -i aide-*-1.amd64.rpm
+
+            # Portable binary
+            tar -xzf aide-linux-amd64.tar.gz
+            sudo mv aide-linux-amd64 /usr/local/bin/aide
+            ```
+
+            ### 🍎 macOS
+            ```bash
+            # Apple Silicon (M1/M2/M3)
+            tar -xzf aide-darwin-arm64.tar.gz
+            sudo mv aide-darwin-arm64 /usr/local/bin/aide
+
+            # Intel
+            tar -xzf aide-darwin-amd64.tar.gz
+            sudo mv aide-darwin-amd64 /usr/local/bin/aide
+            ```
+
+            ### 🪟 Windows
+            ```
+            # Run the NSIS installer
+            aide-*-setup-x64.exe
+
+            # Or portable — unzip and run
+            aide-windows-amd64.exe
+            ```
+            
+            > 💡 **Tip:** Add the install folder to your `PATH` to use `aide` from any terminal.
+
+            ---
+            SHA256 checksums are in `aide_${{ github.ref_name }}_checksums.txt`.
+          files: |
+            dist/aide-linux-amd64.tar.gz
+            dist/aide-linux-arm64.tar.gz
+            dist/aide-darwin-amd64.tar.gz
+            dist/aide-darwin-arm64.tar.gz
+            dist/aide-windows-amd64.exe.zip
+            dist/aide-windows-arm64.exe.zip
+            dist/aide_*_amd64.deb
+            dist/aide_*_arm64.deb
+            dist/aide-*-1.amd64.rpm
+            dist/aide-*-1.arm64.rpm
+            dist/aide-*-setup-x64.exe
+            dist/aide_*_checksums.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

@@ -1,4 +1,4 @@
-module aion
+module aide
 
 go 1.22
 
