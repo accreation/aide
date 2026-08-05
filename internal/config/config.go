@@ -18,6 +18,25 @@ type Tool struct {
 	Version string `yaml:"version,omitempty"`
 }
 
+// FindPath looks for aion.yaml starting at startDir and walking up to root.
+// Returns the full path to the file, or error if not found.
+func FindPath(startDir string) (string, error) {
+	dir := startDir
+	for {
+		path := filepath.Join(dir, "aion.yaml")
+		if _, err := os.Stat(path); err == nil {
+			return path, nil
+		} else if !os.IsNotExist(err) {
+			return "", fmt.Errorf("checking %s: %w", path, err)
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("aion.yaml not found (searched from %s upward)", startDir)
+		}
+		dir = parent
+	}
+}
+
 // FindAndParse looks for aion.yaml starting at startDir and walking up to root.
 // Returns parsed Config or error if not found / invalid.
 func FindAndParse(startDir string) (*Config, error) {
