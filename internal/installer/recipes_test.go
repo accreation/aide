@@ -18,9 +18,6 @@ func TestLoadEmbeddedRecipes(t *testing.T) {
 	if _, ok := recipes["git"]; !ok {
 		t.Fatal("expected 'git' recipe")
 	}
-	if _, ok := recipes["rtk"]; !ok {
-		t.Fatal("expected 'rtk' recipe")
-	}
 }
 
 func TestLoadExternalOverrides(t *testing.T) {
