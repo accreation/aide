@@ -235,6 +235,9 @@ func extractTarGz(src, destDir, binaryName string) error {
 			if _, err := io.Copy(out, tr); err != nil {
 				return fmt.Errorf("extracting: %w", err)
 			}
+			if err := os.Chmod(dest, 0o755); err != nil {
+				return fmt.Errorf("chmod output file: %w", err)
+			}
 			return nil
 		}
 	}
