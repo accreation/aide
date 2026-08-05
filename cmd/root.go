@@ -73,7 +73,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("\nAll checks passed! Launching provider...")
-	l := &launcher.Launcher{}
+	l := &launcher.Launcher{AccountName: cfg.Account}
 	extraArgs := strings.Fields(cfg.Args)
 	return l.Launch(cfg.Provider, extraArgs...)
 }

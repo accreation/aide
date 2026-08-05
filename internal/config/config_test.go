@@ -83,6 +83,39 @@ func TestConfigNotFound(t *testing.T) {
 	}
 }
 
+func TestParseConfigWithAccount(t *testing.T) {
+	tmp := t.TempDir()
+	content := `provider: claude
+account: company-x
+tools: []
+`
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
+
+	cfg, err := FindAndParse(tmp)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Account != "company-x" {
+		t.Errorf("expected account 'company-x', got %q", cfg.Account)
+	}
+}
+
+func TestParseConfigWithoutAccount(t *testing.T) {
+	tmp := t.TempDir()
+	content := `provider: claude
+tools: []
+`
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
+
+	cfg, err := FindAndParse(tmp)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Account != "" {
+		t.Errorf("expected empty account, got %q", cfg.Account)
+	}
+}
+
 func TestGenerateDefault(t *testing.T) {
 	cfg := GenerateDefault("copilot")
 	if cfg.Provider != "copilot" {
