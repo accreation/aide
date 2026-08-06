@@ -12,7 +12,13 @@ type Config struct {
 	Provider string `yaml:"provider"`
 	Account  string `yaml:"account,omitempty"`
 	Args     string `yaml:"args,omitempty"`
+	Mode     string `yaml:"mode,omitempty"`
 	Tools    []Tool `yaml:"tools"`
+}
+
+// IsIsolated returns true when Mode is "isolated".
+func (c *Config) IsIsolated() bool {
+	return c.Mode == "isolated"
 }
 
 type Tool struct {
@@ -64,6 +70,15 @@ func FindAndParse(startDir string) (*Config, error) {
 func GenerateDefault(provider string) *Config {
 	return &Config{
 		Provider: provider,
+		Tools:    []Tool{},
+	}
+}
+
+// GenerateIsolated returns a Config for aide init with mode: isolated.
+func GenerateIsolated(provider string) *Config {
+	return &Config{
+		Provider: provider,
+		Mode:     "isolated",
 		Tools:    []Tool{},
 	}
 }

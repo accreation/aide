@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "writing-docs": {
+      "source": "remotion-dev/remotion",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/writing-docs/SKILL.md",
+      "computedHash": "17e92a053c6514576cfde31959a03cc42eac7556eb8e26529a1361c323a8270c"
+    }
+  }
+}

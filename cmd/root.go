@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"aide/internal/checker"
@@ -51,6 +52,13 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting current directory: %w", err)
 	}
 
+	cfgPath, err := config.FindPath(cwd)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		fmt.Fprintln(os.Stderr, "Tip: run 'aide init' to create aide.yaml")
+		os.Exit(1)
+	}
+
 	cfg, err := config.FindAndParse(cwd)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
@@ -58,7 +66,14 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	chk := checker.New(cfg)
+	projectDir := filepath.Dir(cfgPath)
+
+	var chk *checker.Checker
+	if cfg.IsIsolated() {
+		chk = checker.NewWithProjectDir(cfg, projectDir)
+	} else {
+		chk = checker.New(cfg)
+	}
 	providerResult := chk.CheckProvider()
 	toolResults := chk.CheckTools()
 
@@ -75,5 +90,9 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	fmt.Println("\nAll checks passed! Launching provider...")
 	l := &launcher.Launcher{AccountName: cfg.Account}
 	extraArgs := strings.Fields(cfg.Args)
+	if cfg.IsIsolated() {
+		env := launcher.IsolatedEnv(projectDir)
+		return l.LaunchWithEnv(cfg.Provider, env, extraArgs...)
+	}
 	return l.Launch(cfg.Provider, extraArgs...)
 }

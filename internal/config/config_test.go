@@ -116,6 +116,51 @@ tools: []
 	}
 }
 
+func TestModeIsolated(t *testing.T) {
+	tmp := t.TempDir()
+	content := `provider: claude
+mode: isolated
+tools: []
+`
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
+
+	cfg, err := FindAndParse(tmp)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !cfg.IsIsolated() {
+		t.Error("expected IsIsolated() = true for mode: isolated")
+	}
+}
+
+func TestModeGlobal(t *testing.T) {
+	tmp := t.TempDir()
+	content := `provider: claude
+mode: global
+tools: []
+`
+	os.WriteFile(filepath.Join(tmp, "aide.yaml"), []byte(content), 0644)
+
+	cfg, err := FindAndParse(tmp)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.IsIsolated() {
+		t.Error("expected IsIsolated() = false for mode: global")
+	}
+}
+
+func TestModeDefault(t *testing.T) {
+	// No mode field → default = global, IsIsolated = false
+	cfg := GenerateDefault("copilot")
+	if cfg.IsIsolated() {
+		t.Error("expected IsIsolated() = false when mode is not set")
+	}
+	if cfg.Mode != "" {
+		t.Error("expected Mode to be empty by default")
+	}
+}
+
 func TestGenerateDefault(t *testing.T) {
 	cfg := GenerateDefault("copilot")
 	if cfg.Provider != "copilot" {

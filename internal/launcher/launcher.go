@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"aide/internal/account"
+	"aide/internal/installer"
 )
 
 // Launcher runs the provider binary, optionally switching accounts first.
@@ -17,6 +18,13 @@ type Launcher struct {
 // Launch runs the provider binary as a child process, inheriting stdin/stdout/stderr.
 // If AccountName is set, applies provider-specific account switching before launch.
 func (l *Launcher) Launch(name string, args ...string) error {
+	return l.LaunchWithEnv(name, nil, args...)
+}
+
+// LaunchWithEnv launches provider with a custom PATH (prepended before system PATH).
+// If env is set, it is used as the child process environment.
+// If env is nil, the current process environment is used as base.
+func (l *Launcher) LaunchWithEnv(name string, env []string, args ...string) error {
 	path, err := exec.LookPath(name)
 	if err != nil {
 		return fmt.Errorf("provider %q not found in PATH", name)
@@ -27,6 +35,10 @@ func (l *Launcher) Launch(name string, args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	if env != nil {
+		cmd.Env = env
+	}
+
 	// Apply account switching if configured
 	if l.AccountName != "" {
 		if err := l.applyAccount(cmd); err != nil {
@@ -35,6 +47,20 @@ func (l *Launcher) Launch(name string, args ...string) error {
 	}
 
 	return cmd.Run()
+}
+
+// IsolatedEnv returns the environment for an isolated launch: prepends .aide/shims to PATH.
+func IsolatedEnv(projectDir string) []string {
+	shimDir := installer.ShimDir(projectDir)
+	env := os.Environ()
+	for i, e := range env {
+		if strings.HasPrefix(strings.ToUpper(e), "PATH=") {
+			env[i] = "PATH=" + shimDir + string(os.PathListSeparator) + e[5:]
+			return env
+		}
+	}
+	// PATH not found in environment — add it
+	return append(env, "PATH="+shimDir)
 }
 
 // applyAccount loads the account and applies provider-specific switching.
@@ -69,17 +95,21 @@ func applyCopilotAccount(acc account.Account) error {
 }
 
 func applyClaudeAccount(acc account.Account, cmd *exec.Cmd) error {
-	cmd.Env = replaceEnv(os.Environ(), "ANTHROPIC_API_KEY", acc.APIKey)
+	cmd.Env = replaceEnv(cmd.Env, "ANTHROPIC_API_KEY", acc.APIKey)
 	return nil
 }
 
 func applyCodexAccount(acc account.Account, cmd *exec.Cmd) error {
-	cmd.Env = replaceEnv(os.Environ(), "CODEX_HOME", acc.CodexHome)
+	cmd.Env = replaceEnv(cmd.Env, "CODEX_HOME", acc.CodexHome)
 	return nil
 }
 
 // replaceEnv builds a new env slice, replacing the target variable if it already exists.
+// If env is nil, falls back to the current process environment.
 func replaceEnv(env []string, key, value string) []string {
+	if env == nil {
+		env = os.Environ()
+	}
 	prefix := key + "="
 	replaced := false
 	for i, e := range env {

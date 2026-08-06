@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"aide/internal/semver"
 )
 
 type githubRelease struct {
@@ -58,8 +60,8 @@ func matchAsset(assets []githubAsset, pattern string) (githubAsset, bool) {
 var githubAPIBaseURL = "https://api.github.com"
 
 // installFromGithub downloads a binary from GitHub Releases, extracts if needed,
-// and places it in the user's local bin directory.
-func installFromGithub(ownerRepo, assetPattern, binaryName string) error {
+// and places it in destDir. If destDir is empty, defaults to ~/.local/bin (global mode).
+func installFromGithub(ownerRepo, assetPattern, binaryName, destDir string) error {
 	parts := strings.SplitN(ownerRepo, "/", 2)
 	if len(parts) != 2 {
 		return fmt.Errorf("invalid owner/repo: %q", ownerRepo)
@@ -94,10 +96,15 @@ func installFromGithub(ownerRepo, assetPattern, binaryName string) error {
 		return fmt.Errorf("downloading asset: %w", err)
 	}
 
-	// Determine extraction or direct copy
-	binDir, err := getBinDir()
-	if err != nil {
-		return fmt.Errorf("getting bin dir: %w", err)
+	// Determine destination directory
+	binDir := destDir
+	isGlobal := binDir == ""
+	if isGlobal {
+		var err error
+		binDir, err = getBinDir()
+		if err != nil {
+			return fmt.Errorf("getting bin dir: %w", err)
+		}
 	}
 
 	if err := os.MkdirAll(binDir, 0755); err != nil {
@@ -122,10 +129,12 @@ func installFromGithub(ownerRepo, assetPattern, binaryName string) error {
 		}
 	}
 
-	// Ensure bin dir in PATH
-	if err := ensureInPath(binDir); err != nil {
-		fmt.Fprintf(os.Stderr, "  Warning: could not add %s to PATH: %v\n", binDir, err)
-		fmt.Fprintf(os.Stderr, "  Add it manually to use %s from any terminal.\n", binaryName)
+	// Ensure bin dir in PATH (global mode only)
+	if isGlobal {
+		if err := ensureInPath(binDir); err != nil {
+			fmt.Fprintf(os.Stderr, "  Warning: could not add %s to PATH: %v\n", binDir, err)
+			fmt.Fprintf(os.Stderr, "  Add it manually to use %s from any terminal.\n", binaryName)
+		}
 	}
 
 	fmt.Printf("  OK  %s installed to %s\n", binaryName, binDir)
@@ -246,6 +255,37 @@ func extractTarGz(src, destDir, binaryName string) error {
 		}
 	}
 	return fmt.Errorf("binary %q not found in tar.gz archive", binaryName)
+}
+
+// fetchLatestReleaseMatching fetches the latest GitHub release whose tag satisfies
+// the given semver constraint. Returns the tag name, or an error if no matching
+// release found.
+func fetchLatestReleaseMatching(ownerRepo, constraint string) (string, error) {
+	parts := strings.SplitN(ownerRepo, "/", 2)
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid owner/repo: %q", ownerRepo)
+	}
+	owner, repo := parts[0], parts[1]
+
+	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", githubAPIBaseURL, owner, repo)
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	release, err := fetchLatestRelease(apiURL, client)
+	if err != nil {
+		return "", fmt.Errorf("fetching release for %s: %w", ownerRepo, err)
+	}
+
+	// Strip leading "v" if present
+	tag := strings.TrimPrefix(release.TagName, "v")
+
+	ok, err := semver.CheckConstraint(tag, constraint)
+	if err != nil {
+		return "", fmt.Errorf("checking constraint %s against version %s: %w", constraint, tag, err)
+	}
+	if !ok {
+		return "", fmt.Errorf("latest release %s does not satisfy constraint %s", release.TagName, constraint)
+	}
+	return release.TagName, nil
 }
 
 // copyFile copies a file from src to dest.
