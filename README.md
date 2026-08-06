@@ -25,6 +25,8 @@
 - [Quick Start](#quick-start)
 - [Configuration Reference](#configuration-reference)
 - [CLI Reference](#cli-reference)
+- [Isolated Mode](#isolated-mode)
+- [Multi-Account Switching](#multi-account-switching)
 - [Supported Tools](#supported-tools)
 - [Recipes System](#recipes-system)
 - [Project Registry](#project-registry)
@@ -203,6 +205,8 @@ aide check            # check only — no install, no launch (for CI pipelines)
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
 | `provider` | Yes | `string` | AI provider binary name: `claude`, `copilot`, `codex`, `opencode` |
+| `account` | No | `string` | Name of a registered account from `~/.aide/accounts.json` (see [Multi-Account Switching](#multi-account-switching)) |
+| `mode` | No | `string` | `"isolated"` for project-local tool isolation (see [Isolated Mode](#isolated-mode)) |
 | `args` | No | `string` | Extra CLI arguments passed to the provider on launch (space-separated) |
 | `tools` | Yes | `[]Tool` | List of required CLI tools |
 | `tools[].name` | Yes | `string` | Executable name (must match a name in [recipes](#recipes-system)) |
@@ -212,6 +216,8 @@ aide check            # check only — no install, no launch (for CI pipelines)
 
 ```yaml
 provider: claude
+account: work-account
+mode: isolated
 args: "--dangerously-skip-permissions"
 
 tools:
@@ -227,6 +233,13 @@ tools:
   - name: terraform
     version: "~1.5.0"
 ```
+
+### Mode: Isolated vs Global
+
+| Mode | Description |
+|------|-------------|
+| *(omitted)* | **Global mode** — tools are installed system-wide via native package managers. PATH is unchanged. |
+| `isolated` | **Isolated mode** — tools supporting isolation are installed to `.aide/store/` and exposed via shims in `.aide/shims/`. Only `.aide/shims/` is prepended to PATH. Other tools fall back to system install. |
 
 ### Version Constraint Formats
 
@@ -255,6 +268,9 @@ Aide uses [Masterminds/semver](https://github.com/Masterminds/semver) for versio
 | `aide install` | `aide i` | Check, install missing tools, then launch provider |
 | `aide init` | — | Create `aide.yaml` in current directory |
 | `aide add <tool>` | — | Add or update a tool entry in `aide.yaml` |
+| `aide account add <name>` | — | Register a provider account (Copilot, Claude, Codex) |
+| `aide account list` | — | List all registered accounts |
+| `aide account remove <name>` | — | Remove a registered account |
 | `aide cache clear` | — | Clear the remote recipes cache |
 | `aide --version` | — | Print version and exit |
 | `aide --help` | — | Show help |
@@ -263,9 +279,13 @@ Aide uses [Masterminds/semver](https://github.com/Masterminds/semver) for versio
 
 | Flag | Applies to | Description |
 |------|-----------|-------------|
-| `--provider`, `-p` | `init` | AI provider name (default: `claude`) |
+| `--provider`, `-p` | `init`, `account add` | AI provider name (default: `claude`) |
 | `--name`, `-n` | `init` | Register project in global registry for `aide start` |
+| `--isolated` | `init` | Enable project-local tool isolation (`mode: isolated`) |
 | `--version`, `-v` | `add` | Pin a specific version constraint |
+| `--user` | `account add` | GitHub username (for Copilot accounts) |
+| `--api-key` | `account add` | API key (for Claude accounts) |
+| `--codex-home` | `account add` | Codex home directory path (for Codex accounts) |
 | `--recipes-url` | *(global)* | URL to fetch external recipes from (env: `AIDE_RECIPES_URL`) |
 
 ### Exit Codes
@@ -274,6 +294,136 @@ Aide uses [Masterminds/semver](https://github.com/Masterminds/semver) for versio
 |------|---------|
 | `0` | All checks passed, provider launched |
 | `1` | Something missing, outdated, or errored |
+
+---
+
+## Isolated Mode
+
+Isolated mode installs tools **per-project** — no global system changes, no version conflicts between projects, and fully reproducible environments.
+
+### How It Works
+
+```
+project/
+├── aide.yaml          # mode: isolated
+├── .aide/
+│   ├── store/         # local tool installations
+│   │   ├── rtk/
+│   │   │   └── 0.5.0/
+│   │   │       └── bin/
+│   │   │           └── rtk.exe
+│   │   └── graphify/
+│   │       └── 1.2.0/
+│   │           └── bin/
+│   │               └── graphify
+│   └── shims/         # PATH entries that resolve to store binaries
+│       ├── rtk → ../store/rtk/0.5.0/bin/rtk       (Unix: symlink)
+│       └── rtk.cmd                                   (Windows: .cmd wrapper)
+```
+
+1. **Init with isolation**: `aide init --provider claude --isolated` creates `aide.yaml` with `mode: isolated`
+2. **Install tools**: `aide install` downloads tools to `.aide/store/<tool>/<version>/bin/` and creates shims in `.aide/shims/`
+3. **Launch**: Aide prepends `.aide/shims/` to `PATH` before launching the AI provider — the provider sees only the project's tool versions
+4. **`.aide/` is gitignored**: Aide automatically adds `.aide/` to `.gitignore` (if not already present)
+
+### Supported Isolation Types
+
+| Recipe type | Behavior in isolated mode |
+|-------------|---------------------------|
+| `github` | ✅ Downloaded to `.aide/store/`, shim created |
+| `pipx` | ✅ Installed to `.aide/store/`, shim created |
+| `winget`, `brew`, `apt`, `dnf`, `choco`, `scoop` | ⚠️ Falls back to global install with a warning (system PMs install globally by nature) |
+| `curl` | ⚠️ Falls back to global install |
+
+### Example: Isolated Project
+
+```bash
+# Create an isolated project
+aide init --provider claude --isolated --name my-isolated-project
+
+# Add tools — they'll be installed locally
+aide add rtk
+aide add graphify
+
+# Install (downloads to .aide/store/, creates shims)
+aide install
+
+# Your aide.yaml now looks like:
+# provider: claude
+# mode: isolated
+# tools:
+#   - name: rtk
+#   - name: graphify
+```
+
+### Version Resolution
+
+When a tool has a version constraint (e.g., `>=2.0.0`), isolated mode resolves the latest matching GitHub release. If no constraint is specified, the latest release is used. Each version gets its own directory in `.aide/store/`, allowing different projects to pin different versions of the same tool.
+
+---
+
+## Multi-Account Switching
+
+Aide supports **named provider accounts** — configure multiple Copilot, Claude, or Codex accounts and switch between them per project.
+
+### Account Management
+
+```bash
+# Add a Copilot account (switches GitHub user via 'gh auth switch')
+aide account add work-copilot --provider copilot --user work-username
+
+# Add a Claude account (sets ANTHROPIC_API_KEY)
+aide account add personal-claude --provider claude --api-key sk-ant-xxx
+
+# Add a Codex account (sets CODEX_HOME)
+aide account add my-codex --provider codex --codex-home /path/to/codex/config
+
+# List registered accounts
+aide account list
+
+# Remove an account
+aide account remove personal-claude
+```
+
+Accounts are stored in `~/.aide/accounts.json` with permissions `0600` (owner read/write only — credentials are never world-readable).
+
+### Using Accounts in Projects
+
+Reference an account in your `aide.yaml`:
+
+```yaml
+provider: copilot
+account: work-copilot
+
+tools:
+  - name: gh
+```
+
+When Aide launches the provider, it applies the account **before** starting the process:
+
+| Provider | Account action |
+|----------|---------------|
+| `copilot` | Runs `gh auth switch --user <username>` to switch the active GitHub user |
+| `claude` | Sets `ANTHROPIC_API_KEY=<api-key>` in the provider's environment |
+| `codex` | Sets `CODEX_HOME=<path>` in the provider's environment |
+
+This means you can have different projects use different accounts — no manual switching needed.
+
+### Example: Work vs Personal
+
+```bash
+# ~/work-project/aide.yaml
+# provider: copilot
+# account: work-copilot
+
+# ~/personal-project/aide.yaml
+# provider: claude
+# account: personal-claude
+```
+
+Launch either project with `aide` (or `aide start`) and the correct account is applied automatically.
+
+> 💡 Combine isolated mode with account switching for fully self-contained project environments: `mode: isolated` + `account: work-copilot` gives you both tool isolation and account isolation.
 
 ---
 
@@ -336,8 +486,8 @@ This allows teams to add custom tools without modifying the binary — just host
   arch_map:              # optional — maps GOARCH to tool-specific arch names
     amd64: x86_64
     arm64: aarch64
-  requires:              # optional — prerequisites installed first if missing
-    - pipx
+  requires:              # optional — prerequisites auto-installed before this tool
+    - pipx               # example: graphify requires pipx to be installed first
   windows:               # per-OS install methods (tried in order)
     - winget: package-id
     - scoop: package-name
@@ -413,7 +563,9 @@ This changes directory to the project path and runs the full check + launch flow
 
 **Under the hood:**
 
-- `~/.aide/` — configuration directory (cache, project registry)
+- `~/.aide/` — configuration directory (cache, project registry, accounts)
+- `~/.aide/projects.json` — project name → path registry
+- `~/.aide/accounts.json` — provider accounts (permissions `0600`, owner read/write only)
 - `~/.local/bin/` — user-local binary directory for GitHub release installations
 
 ---
@@ -423,12 +575,13 @@ This changes directory to the project path and runs the full check + launch flow
 ### Package Layout
 
 ```
-cmd/            — CLI surface (cobra commands): root, init, add, install, start, cache
+cmd/            — CLI surface (cobra commands): root, init, add, install, start, account, cache
 internal/
+  account/      — provider account credentials (~/.aide/accounts.json), used by launcher
   config/       — aide.yaml parsing (find upwards from cwd, parse YAML)
-  checker/      — verifies binaries exist in PATH and satisfy semver constraints
-  installer/    — resolves tool → package-manager mapping via embedded recipes.yaml, executes install
-  launcher/     — execs the provider binary inheriting stdin/stdout/stderr
+  checker/      — verifies binaries exist in PATH (or .aide/shims for isolated mode) and satisfy semver constraints
+  installer/    — resolves tool → package-manager mapping via embedded recipes.yaml, executes install; handles project-local isolation (.aide/store/ + shims)
+  launcher/     — execs the provider binary inheriting stdin/stdout/stderr; applies account switching and isolated PATH
   display/      — formats check/install results for terminal output
   project/      — named project registry (~/.aide/projects.json), used by `aide start`
   semver/       — extracts versions from --version output and checks constraints
@@ -441,6 +594,8 @@ internal/
 - **Package manager resolution** is OS-specific: the `Recipe` struct has `windows`, `macos`, and `linux` keys, each a list of `PMEntry` maps tried in order. The first available PM on the system wins.
 - **Version detection** tries `--version` first, then `-v`, then the `version` subcommand. Uses regex to extract the first semver from the output.
 - **`aide start`** uses a JSON registry at `~/.aide/projects.json` (name → absolute path), chdir's into the project, then runs the full check + launch flow.
+- **Isolated mode** installs tools to `.aide/store/<tool>/<version>/bin/` and creates shims in `.aide/shims/` — prepended to `PATH` before launching the provider. Only `github` and `pipx` recipes support full isolation; system PMs fall back to global install.
+- **Account switching** reads credentials from `~/.aide/accounts.json` (permissions `0600`) and applies provider-specific switching before launch: `gh auth switch` for Copilot, `ANTHROPIC_API_KEY` for Claude, `CODEX_HOME` for Codex.
 - **PATH management** for GitHub release installs: Aide automatically adds `~/.local/bin` to your user PATH (via `~/.bashrc`, `~/.zshrc` on Unix, or `[Environment]::SetEnvironmentVariable` on Windows).
 
 ### Dependencies
