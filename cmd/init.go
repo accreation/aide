@@ -12,18 +12,20 @@ import (
 )
 
 var initProvider string
-var initName string
+var initName   string
+var initIsolated bool
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create aide.yaml in the current directory",
-	Long:  "Generates a default aide.yaml with the specified provider. Use --name to register the project for 'aide start'.",
+	Long:  "Generates a default aide.yaml with the specified provider. Use --name to register the project for 'aide start'. Use --isolated for per-project tool isolation.",
 	RunE:  runInit,
 }
 
 func init() {
 	initCmd.Flags().StringVarP(&initProvider, "provider", "p", "claude", "AI provider name (claude, copilot, codex, opencode)")
 	initCmd.Flags().StringVarP(&initName, "name", "n", "", "Register project with a name for 'aide start'")
+	initCmd.Flags().BoolVar(&initIsolated, "isolated", false, "Enable project-local tool isolation (.aide/store + .aide/shims)")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -41,7 +43,12 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	// If aide.yaml does not exist, create it.
 	if !exists {
-		cfg := config.GenerateDefault(initProvider)
+		var cfg *config.Config
+		if initIsolated {
+			cfg = config.GenerateIsolated(initProvider)
+		} else {
+			cfg = config.GenerateDefault(initProvider)
+		}
 		data, err := yaml.Marshal(cfg)
 		if err != nil {
 			return fmt.Errorf("marshaling config: %w", err)
@@ -51,7 +58,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("writing %s: %w", path, err)
 		}
 
-		fmt.Printf("Created %s with provider: %s\n", path, initProvider)
+		modeLabel := ""
+		if initIsolated {
+			modeLabel = " (isolated mode)"
+		}
+		fmt.Printf("Created %s with provider: %s%s\n", path, initProvider, modeLabel)
 		fmt.Println("Add your tools to the 'tools' list, then run 'aide check'.")
 	}
 

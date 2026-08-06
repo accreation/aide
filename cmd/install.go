@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"aide/internal/checker"
@@ -32,6 +33,13 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting current directory: %w", err)
 	}
 
+	cfgPath, err := config.FindPath(cwd)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		fmt.Fprintln(os.Stderr, "Tip: run 'aide init' to create aide.yaml")
+		os.Exit(1)
+	}
+
 	cfg, err := config.FindAndParse(cwd)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)
@@ -51,8 +59,22 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("loading recipes: %w", err)
 	}
 
-	chk := checker.New(cfg)
+	projectDir := filepath.Dir(cfgPath)
+
+	var chk *checker.Checker
+	if cfg.IsIsolated() {
+		chk = checker.NewWithProjectDir(cfg, projectDir)
+	} else {
+		chk = checker.New(cfg)
+	}
 	inst := installer.New(recipes)
+
+	// Ensure shim dir exists for isolated projects
+	if cfg.IsIsolated() {
+		if err := installer.EnsureShimDir(projectDir); err != nil {
+			return fmt.Errorf("setting up shim dir: %w", err)
+		}
+	}
 
 	// Check provider
 	providerResult := chk.CheckProvider()
@@ -70,8 +92,14 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	toolResults := chk.CheckTools()
 	for i, tr := range toolResults {
 		if !tr.Ok {
-			if err := inst.Install(cfg.Tools[i].Name); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to install %s: %v\n", cfg.Tools[i].Name, err)
+			tool := cfg.Tools[i]
+			opts := installer.InstallOptions{}
+			if cfg.IsIsolated() {
+				opts.ProjectDir = projectDir
+				opts.Version = tool.Version
+			}
+			if err := inst.InstallWithOptions(tool.Name, opts); err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to install %s: %v\n", tool.Name, err)
 			}
 		}
 	}
@@ -93,5 +121,9 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	fmt.Println("\nLaunching provider...")
 	l := &launcher.Launcher{}
 	extraArgs := strings.Fields(cfg.Args)
+	if cfg.IsIsolated() {
+		env := launcher.IsolatedEnv(projectDir)
+		return l.LaunchWithEnv(cfg.Provider, env, extraArgs...)
+	}
 	return l.Launch(cfg.Provider, extraArgs...)
 }

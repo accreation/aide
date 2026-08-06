@@ -68,7 +68,7 @@ func TestGithubInstallIntegration(t *testing.T) {
 	defer func() { githubAPIBaseURL = origAPI }()
 
 	// Call installFromGithub directly (bypasses ResolvePM since we test the core).
-	if err := installFromGithub("test/tool", downloadName, "tool.exe"); err != nil {
+	if err := installFromGithub("test/tool", downloadName, "tool.exe", ""); err != nil {
 		t.Fatalf("installFromGithub: %v", err)
 	}
 
@@ -138,7 +138,7 @@ func TestGithubInstallIntegrationTarGz(t *testing.T) {
 	githubAPIBaseURL = srv.URL
 	defer func() { githubAPIBaseURL = origAPI }()
 
-	if err := installFromGithub("test/tool2", downloadName, "tool"); err != nil {
+	if err := installFromGithub("test/tool2", downloadName, "tool", ""); err != nil {
 		t.Fatalf("installFromGithub: %v", err)
 	}
 
