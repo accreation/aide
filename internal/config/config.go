@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Provider string `yaml:"provider"`
+	Account  string `yaml:"account,omitempty"`
 	Args     string `yaml:"args,omitempty"`
 	Mode     string `yaml:"mode,omitempty"`
 	Tools    []Tool `yaml:"tools"`
