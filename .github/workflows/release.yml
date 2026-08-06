@@ -14,6 +14,7 @@ jobs:
     name: Build (${{ matrix.goos }}/${{ matrix.goarch }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { goos: linux,   goarch: amd64,  ext: '' }
@@ -21,7 +22,6 @@ jobs:
           - { goos: darwin,  goarch: amd64,  ext: '' }
           - { goos: darwin,  goarch: arm64,  ext: '' }
           - { goos: windows, goarch: amd64,  ext: '.exe' }
-          - { goos: windows, goarch: arm64,  ext: '.exe' }
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
@@ -62,6 +62,48 @@ jobs:
         with:
           name: aide-${{ matrix.goos }}-${{ matrix.goarch }}
           path: aide-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.*
+          if-no-files-found: error
+
+  # ── Windows ARM64 (optional — runner availability is limited) ────
+  build-windows-arm64:
+    name: Build (windows/arm64)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Build
+        env:
+          GOOS: windows
+          GOARCH: arm64
+          CGO_ENABLED: 0
+        run: |
+          BINARY="aide-windows-arm64.exe"
+          go build \
+            -trimpath \
+            -ldflags "-s -w -X aide/cmd.Version=${{ steps.version.outputs.VERSION }} -X aide/cmd.DefaultRecipesURL=https://accreation.github.io/aide/recipes.yaml" \
+            -o "$BINARY" \
+            .
+          echo "BINARY=$BINARY" >> $GITHUB_ENV
+
+      - name: Package (zip)
+        run: zip "${BINARY}.zip" "$BINARY"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aide-windows-arm64
+          path: aide-windows-arm64.exe.*
           if-no-files-found: error
 
   # ── Linux packages (.deb / .rpm via nfpm) ────────────────────────
@@ -210,7 +252,7 @@ jobs:
             dist/aide-darwin-amd64.tar.gz
             dist/aide-darwin-arm64.tar.gz
             dist/aide-windows-amd64.exe.zip
-            dist/aide-windows-arm64.exe.zip
+            dist/aide-windows-*.exe.zip
             dist/aide_*_amd64.deb
             dist/aide_*_arm64.deb
             dist/aide-*-1.amd64.rpm
