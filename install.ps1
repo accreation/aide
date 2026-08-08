@@ -80,7 +80,8 @@ Remove-Item $TempZip -Force -ErrorAction SilentlyContinue
 Remove-Item $ExtractDir -Recurse -Force -ErrorAction SilentlyContinue
 
 # ── Add to PATH ─────────────────────────────────────────────────────
-$CurrentUserPath = [Environment]::GetEnvironmentVariable("Path", "User") ?? ""
+$CurrentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if (-not $CurrentUserPath) { $CurrentUserPath = "" }
 
 if ($CurrentUserPath -notlike "*$BinDir*") {
     Write-Host "Adding $BinDir to user PATH..."
