@@ -34,6 +34,7 @@
 | kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
 | kubectl | kubectl — Kubernetes command-line tool | [kubernetes.io](https://kubernetes.io/docs/reference/kubectl/) | winget, scoop, choco | brew | apt, dnf |
 | lua | Lua — lightweight, embeddable scripting language | [lua.org](https://www.lua.org) | winget, scoop, choco | brew | apt, dnf |
+| maven | Maven — software project management and comprehension tool | [maven.apache.org](https://maven.apache.org) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
 | pack | Pack — Cloud Native Buildpacks CLI | [buildpacks.io](https://buildpacks.io) | scoop, choco | brew | apt, dnf |

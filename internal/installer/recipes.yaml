@@ -493,6 +493,17 @@ lua:
     - apt: lua5.4
     - dnf: lua
 
+maven:
+  windows:
+    - winget: Apache.Maven
+    - scoop: maven
+    - choco: maven
+  macos:
+    - brew: maven
+  linux:
+    - apt: maven
+    - dnf: maven
+
 zig:
   windows:
     - winget: zig.zig
