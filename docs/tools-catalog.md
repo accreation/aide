@@ -42,6 +42,7 @@
 | php | PHP — popular general-purpose scripting language | [php.net](https://www.php.net) | winget, scoop, choco | brew | apt, dnf |
 | pnpm | pnpm — fast, disk-space efficient package manager | [pnpm.io](https://pnpm.io) | winget, scoop, choco | brew | curl |
 | podman | Podman — daemonless container engine | [podman.io](https://podman.io) | winget, scoop, choco | brew | apt, dnf |
+| postgresql | PostgreSQL client tools — interact with PostgreSQL databases | [postgresql.org](https://www.postgresql.org) | winget, scoop, choco | brew | apt, dnf |
 | pulumi | Pulumi — infrastructure as code using real programming languages | [pulumi.com](https://www.pulumi.com) | winget, scoop, choco | brew | curl |
 | python | Python — programming language runtime (3.12) | [python.org](https://www.python.org) | winget, scoop, choco | brew | apt, dnf |
 | rg | ripgrep — ultra-fast text search tool | [github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) | winget, scoop, choco | brew | apt, dnf |

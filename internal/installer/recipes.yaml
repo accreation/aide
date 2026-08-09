@@ -413,6 +413,17 @@ podman:
     - apt: podman
     - dnf: podman
 
+postgresql:
+  windows:
+    - winget: PostgreSQL.PostgreSQL
+    - scoop: postgresql
+    - choco: postgresql
+  macos:
+    - brew: libpq
+  linux:
+    - apt: postgresql-client
+    - dnf: postgresql
+
 buildah:
   windows:
     - scoop: buildah
