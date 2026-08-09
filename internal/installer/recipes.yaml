@@ -286,6 +286,17 @@ graphify:
     - pipx: graphifyy
     - pip: graphifyy
 
+ansible:
+  windows:
+    - winget: RedHat.Ansible
+    - scoop: ansible
+    - choco: ansible
+  macos:
+    - brew: ansible
+  linux:
+    - apt: ansible
+    - dnf: ansible
+
 pipx:
   windows:
     - scoop: pipx
