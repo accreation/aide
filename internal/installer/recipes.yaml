@@ -806,6 +806,16 @@ micro:
     - apt: micro
     - dnf: micro
 
+tmux:
+  windows:
+    - scoop: tmux
+    - choco: tmux
+  macos:
+    - brew: tmux
+  linux:
+    - apt: tmux
+    - dnf: tmux
+
 pipx:
   windows:
     - scoop: pipx

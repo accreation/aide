@@ -76,6 +76,7 @@
 | sqlite3 | SQLite3 — command-line interface for SQLite | [sqlite.org](https://www.sqlite.org) | winget, scoop, choco | brew | apt, dnf |
 | swift | Swift — powerful and intuitive programming language by Apple | [swift.org](https://www.swift.org) | winget, scoop | brew | apt, dnf |
 | terraform | Terraform — infrastructure as code tool by HashiCorp | [terraform.io](https://www.terraform.io) | winget, scoop, choco | brew | apt, dnf |
+| tmux | tmux — terminal multiplexer | [github.com/tmux/tmux](https://github.com/tmux/tmux) | scoop, choco | brew | apt, dnf |
 | vault | Vault — manage secrets and protect sensitive data | [vaultproject.io](https://www.vaultproject.io) | winget, scoop, choco | brew | apt, dnf |
 | vim | Vim — highly configurable text editor | [vim.org](https://www.vim.org) | winget, scoop, choco | brew | apt, dnf |
 | wget | Wget — non-interactive network downloader | [gnu.org/software/wget](https://www.gnu.org/software/wget/) | winget, scoop, choco | brew | apt, dnf |
