@@ -660,6 +660,14 @@ grafana:
     - apt: grafana
     - dnf: grafana
 
+opentelemetry-collector:
+  windows:
+    - scoop: otelcol-contrib
+  macos:
+    - brew: opentelemetry-collector-contrib
+  linux:
+    - curl: "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/latest/download/otelcol-contrib_linux_amd64.tar.gz | tar xz -C /usr/local/bin"
+
 pipx:
   windows:
     - scoop: pipx
