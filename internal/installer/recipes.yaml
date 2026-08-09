@@ -596,6 +596,17 @@ wget:
     - apt: wget
     - dnf: wget
 
+httpie:
+  windows:
+    - winget: HTTPie.HTTPie
+    - scoop: httpie
+    - choco: httpie
+  macos:
+    - brew: httpie
+  linux:
+    - apt: httpie
+    - dnf: httpie
+
 pipx:
   windows:
     - scoop: pipx

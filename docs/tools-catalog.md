@@ -31,6 +31,7 @@
 | groovy | Groovy — powerful, optionally typed language for the JVM | [groovy-lang.org](https://groovy-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | haskell | Haskell — advanced, purely functional programming language | [haskell.org](https://www.haskell.org) | winget, scoop, choco | brew | apt, dnf |
 | helm | Helm — Kubernetes package manager | [helm.sh](https://helm.sh) | winget, scoop, choco | brew | apt, dnf |
+| httpie | HTTPie — user-friendly HTTP client for the terminal | [httpie.io](https://httpie.io) | winget, scoop, choco | brew | apt, dnf |
 | java | OpenJDK — Java development kit (Temurin 21) | [adoptium.net](https://adoptium.net) | winget, scoop, choco | brew | apt, dnf |
 | jq | jq — lightweight JSON processor for the command line | [github.com/jqlang/jq](https://github.com/jqlang/jq) | winget, scoop, choco | brew | apt, dnf |
 | kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
