@@ -878,6 +878,17 @@ atuin:
     - apt: atuin
     - dnf: atuin
 
+make:
+  windows:
+    - winget: GnuWin32.Make
+    - scoop: make
+    - choco: make
+  macos:
+    - brew: make
+  linux:
+    - apt: make
+    - dnf: make
+
 pipx:
   windows:
     - scoop: pipx

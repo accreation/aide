@@ -47,6 +47,7 @@
 | kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
 | kubectl | kubectl — Kubernetes command-line tool | [kubernetes.io](https://kubernetes.io/docs/reference/kubectl/) | winget, scoop, choco | brew | apt, dnf |
 | lua | Lua — lightweight, embeddable scripting language | [lua.org](https://www.lua.org) | winget, scoop, choco | brew | apt, dnf |
+| make | GNU Make — build automation tool | [gnu.org/software/make](https://www.gnu.org/software/make/) | winget, scoop, choco | brew | apt, dnf |
 | maven | Maven — software project management and comprehension tool | [maven.apache.org](https://maven.apache.org) | winget, scoop, choco | brew | apt, dnf |
 | micro | micro — modern and intuitive terminal-based text editor | [micro-editor.github.io](https://micro-editor.github.io) | winget, scoop, choco | brew | apt, dnf |
 | mongosh | MongoDB Shell — interact with MongoDB databases | [mongodb.com/products/mongosh](https://www.mongodb.com/products/mongosh) | winget, scoop | brew | apt, dnf |
