@@ -374,6 +374,17 @@ php:
     - apt: php-cli
     - dnf: php-cli
 
+ruby:
+  windows:
+    - winget: RubyInstallerTeam.Ruby
+    - scoop: ruby
+    - choco: ruby
+  macos:
+    - brew: ruby
+  linux:
+    - apt: ruby
+    - dnf: ruby
+
 pipx:
   windows:
     - scoop: pipx
