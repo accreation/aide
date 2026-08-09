@@ -353,6 +353,16 @@ skopeo:
     - apt: skopeo
     - dnf: skopeo
 
+swift:
+  windows:
+    - winget: Swift.Toolchain
+    - scoop: swift
+  macos:
+    - brew: swift
+  linux:
+    - apt: swiftlang
+    - dnf: swift-lang
+
 pack:
   windows:
     - scoop: pack
@@ -417,6 +427,16 @@ zig:
   linux:
     - apt: zig
     - dnf: zig
+
+swift:
+  windows:
+    - winget: Swift.Toolchain
+    - scoop: swift
+  macos:
+    - brew: swift
+  linux:
+    - apt: swiftlang
+    - dnf: swift-lang
 
 pipx:
   windows:

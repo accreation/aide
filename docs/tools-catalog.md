@@ -42,6 +42,7 @@
 | rtk | RTK — AI-powered terminal toolkit | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) | github | brew | curl |
 | rustup | Rustup — Rust toolchain installer | [rustup.rs](https://rustup.rs) | winget, scoop | curl | curl |
 | skopeo | Skopeo — work with remote container images | [github.com/containers/skopeo](https://github.com/containers/skopeo) | — | brew | apt, dnf |
+| swift | Swift — powerful and intuitive programming language by Apple | [swift.org](https://www.swift.org) | winget, scoop | brew | apt, dnf |
 | terraform | Terraform — infrastructure as code tool by HashiCorp | [terraform.io](https://www.terraform.io) | winget, scoop, choco | brew | apt, dnf |
 | yarn | Yarn — fast, reliable JavaScript package manager | [yarnpkg.com](https://yarnpkg.com) | winget, scoop, choco | brew | apt, dnf |
 | zig | Zig — general-purpose programming language and toolchain | [ziglang.org](https://ziglang.org) | winget, scoop, choco | brew | apt, dnf |
