@@ -340,6 +340,17 @@ groovy:
     - apt: groovy
     - dnf: groovy
 
+haskell:
+  windows:
+    - winget: Haskell.Haskell
+    - scoop: ghcup
+    - choco: ghc
+  macos:
+    - brew: ghc
+  linux:
+    - apt: ghc
+    - dnf: ghc
+
 ansible:
   windows:
     - winget: RedHat.Ansible
