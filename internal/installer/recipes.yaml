@@ -720,6 +720,17 @@ sops:
     - apt: sops
     - dnf: sops
 
+gpg:
+  windows:
+    - winget: GnuPG.GnuPG
+    - scoop: gnupg
+    - choco: gnupg
+  macos:
+    - brew: gnupg
+  linux:
+    - apt: gnupg
+    - dnf: gnupg2
+
 pipx:
   windows:
     - scoop: pipx

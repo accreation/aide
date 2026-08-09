@@ -28,6 +28,7 @@
 | git | Git — distributed version control system | [git-scm.com](https://git-scm.com) | winget | brew | apt, dnf |
 | glab | GitLab CLI — manage GitLab repos, MRs, issues from terminal | [gitlab.com/gitlab-org/cli](https://gitlab.com/gitlab-org/cli) | winget | brew | apt, dnf |
 | go | Go — systems programming language and toolchain | [go.dev](https://go.dev) | winget, scoop, choco | brew | apt, dnf |
+| gpg | GnuPG — complete implementation of the OpenPGP standard | [gnupg.org](https://gnupg.org) | winget, scoop, choco | brew | apt, dnf |
 | gradle | Gradle — build automation tool for multi-language development | [gradle.org](https://gradle.org) | winget, scoop, choco | brew | apt, dnf |
 | grafana | Grafana — open observability platform | [grafana.com](https://grafana.com) | winget, scoop, choco | brew | apt, dnf |
 | graphify | Graphify — generate visual graphs from codebases | [github.com/rtk-ai/graphify](https://github.com/rtk-ai/graphify) | pipx, pip | pipx, pip | pipx, pip |
