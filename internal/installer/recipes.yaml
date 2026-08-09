@@ -574,6 +574,17 @@ duckdb:
     - apt: duckdb
     - dnf: duckdb
 
+sqlite3:
+  windows:
+    - winget: SQLite.SQLite
+    - scoop: sqlite
+    - choco: sqlite
+  macos:
+    - brew: sqlite
+  linux:
+    - apt: sqlite3
+    - dnf: sqlite
+
 pipx:
   windows:
     - scoop: pipx
