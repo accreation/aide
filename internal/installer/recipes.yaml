@@ -900,6 +900,17 @@ cmake:
     - apt: cmake
     - dnf: cmake
 
+ninja:
+  windows:
+    - winget: Ninja-build.Ninja
+    - scoop: ninja
+    - choco: ninja
+  macos:
+    - brew: ninja
+  linux:
+    - apt: ninja-build
+    - dnf: ninja-build
+
 pipx:
   windows:
     - scoop: pipx

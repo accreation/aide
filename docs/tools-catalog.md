@@ -56,6 +56,7 @@
 | neovim | Neovim — hyperextensible Vim-based text editor | [neovim.io](https://neovim.io) | winget, scoop, choco | brew | apt, dnf |
 | netcat | Netcat — versatile networking utility | [netcat.sourceforge.net](https://netcat.sourceforge.net) | scoop, choco | brew | apt, dnf |
 | newrelic | New Relic CLI — observability platform command-line interface | [newrelic.com](https://newrelic.com) | winget, scoop | brew | apt, dnf |
+| ninja | Ninja — small build system with a focus on speed | [ninja-build.org](https://ninja-build.org) | winget, scoop, choco | brew | apt, dnf |
 | ngrok | ngrok — secure introspectable tunnels to localhost | [ngrok.com](https://ngrok.com) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | openssl | OpenSSL — toolkit for TLS/SSL protocols and cryptography | [openssl.org](https://www.openssl.org) | winget, scoop, choco | brew | apt, dnf |
