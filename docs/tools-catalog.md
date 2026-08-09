@@ -86,3 +86,4 @@
 | yq | yq — portable YAML processor | [github.com/mikefarah/yq](https://github.com/mikefarah/yq) | winget, scoop, choco | brew | apt, dnf |
 | zellij | Zellij — modern terminal workspace and multiplexer | [zellij.dev](https://zellij.dev) | scoop | brew | apt, dnf |
 | zig | Zig — general-purpose programming language and toolchain | [ziglang.org](https://ziglang.org) | winget, scoop, choco | brew | apt, dnf |
+| zoxide | zoxide — smarter cd command | [github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide) | winget, scoop, choco | brew | apt, dnf |

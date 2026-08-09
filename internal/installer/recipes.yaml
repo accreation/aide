@@ -847,6 +847,17 @@ eza:
     - apt: eza
     - dnf: eza
 
+zoxide:
+  windows:
+    - winget: ajeetdsouza.zoxide
+    - scoop: zoxide
+    - choco: zoxide
+  macos:
+    - brew: zoxide
+  linux:
+    - apt: zoxide
+    - dnf: zoxide
+
 pipx:
   windows:
     - scoop: pipx
