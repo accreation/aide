@@ -385,6 +385,17 @@ ruby:
     - apt: ruby
     - dnf: ruby
 
+perl:
+  windows:
+    - winget: StrawberryPerl.StrawberryPerl
+    - scoop: perl
+    - choco: strawberryperl
+  macos:
+    - brew: perl
+  linux:
+    - apt: perl
+    - dnf: perl
+
 pipx:
   windows:
     - scoop: pipx
