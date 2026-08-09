@@ -44,3 +44,4 @@
 | skopeo | Skopeo — work with remote container images | [github.com/containers/skopeo](https://github.com/containers/skopeo) | — | brew | apt, dnf |
 | terraform | Terraform — infrastructure as code tool by HashiCorp | [terraform.io](https://www.terraform.io) | winget, scoop, choco | brew | apt, dnf |
 | yarn | Yarn — fast, reliable JavaScript package manager | [yarnpkg.com](https://yarnpkg.com) | winget, scoop, choco | brew | apt, dnf |
+| zig | Zig — general-purpose programming language and toolchain | [ziglang.org](https://ziglang.org) | winget, scoop, choco | brew | apt, dnf |

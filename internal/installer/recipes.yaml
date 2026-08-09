@@ -407,6 +407,17 @@ lua:
     - apt: lua5.4
     - dnf: lua
 
+zig:
+  windows:
+    - winget: zig.zig
+    - scoop: zig
+    - choco: zig
+  macos:
+    - brew: zig
+  linux:
+    - apt: zig
+    - dnf: zig
+
 pipx:
   windows:
     - scoop: pipx
