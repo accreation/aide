@@ -795,6 +795,17 @@ helix:
     - apt: helix
     - dnf: helix
 
+micro:
+  windows:
+    - winget: zyedidia.micro
+    - scoop: micro
+    - choco: micro
+  macos:
+    - brew: micro
+  linux:
+    - apt: micro
+    - dnf: micro
+
 pipx:
   windows:
     - scoop: pipx
