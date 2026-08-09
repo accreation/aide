@@ -515,6 +515,17 @@ maven:
     - apt: maven
     - dnf: maven
 
+mysql:
+  windows:
+    - winget: Oracle.MySQL
+    - scoop: mysql
+    - choco: mysql
+  macos:
+    - brew: mysql-client
+  linux:
+    - apt: mysql-client
+    - dnf: mysql
+
 zig:
   windows:
     - winget: zig.zig
