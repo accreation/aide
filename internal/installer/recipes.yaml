@@ -649,6 +649,17 @@ prometheus:
     - apt: prometheus
     - dnf: prometheus
 
+grafana:
+  windows:
+    - winget: Grafana.Grafana
+    - scoop: grafana
+    - choco: grafana
+  macos:
+    - brew: grafana
+  linux:
+    - apt: grafana
+    - dnf: grafana
+
 pipx:
   windows:
     - scoop: pipx
