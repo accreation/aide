@@ -346,6 +346,13 @@ buildah:
     - apt: buildah
     - dnf: buildah
 
+skopeo:
+  macos:
+    - brew: skopeo
+  linux:
+    - apt: skopeo
+    - dnf: skopeo
+
 pipx:
   windows:
     - scoop: pipx
