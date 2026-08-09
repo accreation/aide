@@ -443,6 +443,13 @@ buildah:
     - apt: buildah
     - dnf: buildah
 
+clickhouse:
+  windows: []
+  macos:
+    - brew: clickhouse
+  linux:
+    - curl: "https://clickhouse.com/ | sh"
+
 skopeo:
   macos:
     - brew: skopeo

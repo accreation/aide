@@ -10,6 +10,7 @@
 | aws | AWS CLI — manage AWS services from terminal | [aws.amazon.com/cli](https://aws.amazon.com/cli/) | winget, scoop, choco | brew | curl |
 | az | Azure CLI — manage Azure resources from terminal | [github.com/Azure/azure-cli](https://github.com/Azure/azure-cli) | winget | brew | curl |
 | buildah | Buildah — tool for building OCI container images | [buildah.io](https://buildah.io) | scoop | brew | apt, dnf |
+| clickhouse | ClickHouse client — interact with ClickHouse databases | [clickhouse.com](https://clickhouse.com) | — | brew | curl |
 | bun | Bun — fast JavaScript runtime, bundler, and package manager | [bun.sh](https://bun.sh) | winget, scoop | brew | curl |
 | deno | Deno — secure JavaScript/TypeScript runtime | [deno.com](https://deno.com) | winget, scoop, choco | brew | curl |
 | docker | Docker — container platform for building and running applications | [docker.com](https://www.docker.com) | winget, scoop, choco | brew | apt, dnf |
