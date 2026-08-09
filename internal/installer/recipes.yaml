@@ -639,6 +639,16 @@ ngrok:
     - apt: ngrok
     - dnf: ngrok
 
+prometheus:
+  windows:
+    - scoop: prometheus
+    - choco: prometheus
+  macos:
+    - brew: prometheus
+  linux:
+    - apt: prometheus
+    - dnf: prometheus
+
 pipx:
   windows:
     - scoop: pipx
