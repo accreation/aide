@@ -774,6 +774,17 @@ vim:
     - apt: vim
     - dnf: vim
 
+emacs:
+  windows:
+    - winget: GNU.Emacs
+    - scoop: emacs
+    - choco: emacs
+  macos:
+    - brew: emacs
+  linux:
+    - apt: emacs
+    - dnf: emacs
+
 pipx:
   windows:
     - scoop: pipx
