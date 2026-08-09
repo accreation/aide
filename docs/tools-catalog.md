@@ -48,6 +48,7 @@
 | newrelic | New Relic CLI — observability platform command-line interface | [newrelic.com](https://newrelic.com) | winget, scoop | brew | apt, dnf |
 | ngrok | ngrok — secure introspectable tunnels to localhost | [ngrok.com](https://ngrok.com) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
+| openssl | OpenSSL — toolkit for TLS/SSL protocols and cryptography | [openssl.org](https://www.openssl.org) | winget, scoop, choco | brew | apt, dnf |
 | opentelemetry-collector | OpenTelemetry Collector — vendor-agnostic telemetry collection | [opentelemetry.io](https://opentelemetry.io) | scoop | brew | curl |
 | perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
 | pack | Pack — Cloud Native Buildpacks CLI | [buildpacks.io](https://buildpacks.io) | scoop, choco | brew | apt, dnf |

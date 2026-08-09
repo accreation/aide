@@ -731,6 +731,17 @@ gpg:
     - apt: gnupg
     - dnf: gnupg2
 
+openssl:
+  windows:
+    - winget: ShiningLight.OpenSSL
+    - scoop: openssl
+    - choco: openssl
+  macos:
+    - brew: openssl
+  linux:
+    - apt: openssl
+    - dnf: openssl
+
 pipx:
   windows:
     - scoop: pipx
