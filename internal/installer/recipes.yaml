@@ -164,6 +164,17 @@ dotnet:
   linux:
     - curl: "https://dot.net/v1/dotnet-install.sh | bash"
 
+elixir:
+  windows:
+    - winget: Erlang.Erlang
+    - scoop: elixir
+    - choco: elixir
+  macos:
+    - brew: elixir
+  linux:
+    - apt: elixir
+    - dnf: elixir
+
 kubectl:
   windows:
     - winget: Kubernetes.kubectl
