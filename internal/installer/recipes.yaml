@@ -525,6 +525,16 @@ maven:
     - apt: maven
     - dnf: maven
 
+mongosh:
+  windows:
+    - winget: MongoDB.MongoDBShell
+    - scoop: mongosh
+  macos:
+    - brew: mongosh
+  linux:
+    - apt: mongosh
+    - dnf: mongosh
+
 mysql:
   windows:
     - winget: Oracle.MySQL

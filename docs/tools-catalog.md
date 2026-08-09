@@ -35,6 +35,7 @@
 | kubectl | kubectl — Kubernetes command-line tool | [kubernetes.io](https://kubernetes.io/docs/reference/kubectl/) | winget, scoop, choco | brew | apt, dnf |
 | lua | Lua — lightweight, embeddable scripting language | [lua.org](https://www.lua.org) | winget, scoop, choco | brew | apt, dnf |
 | maven | Maven — software project management and comprehension tool | [maven.apache.org](https://maven.apache.org) | winget, scoop, choco | brew | apt, dnf |
+| mongosh | MongoDB Shell — interact with MongoDB databases | [mongodb.com/products/mongosh](https://www.mongodb.com/products/mongosh) | winget, scoop | brew | apt, dnf |
 | mysql | MySQL client — interact with MySQL databases | [mysql.com](https://www.mysql.com) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
