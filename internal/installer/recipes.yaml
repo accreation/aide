@@ -307,6 +307,25 @@ pulumi:
   linux:
     - curl: "https://get.pulumi.com | sh"
 
+argocd:
+  windows:
+    - winget: argoproj.argocd
+    - scoop: argocd
+  macos:
+    - brew: argocd
+  linux:
+    - curl: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.sh | bash"
+
+doctl:
+  windows:
+    - winget: DigitalOcean.Doctl
+    - scoop: doctl
+  macos:
+    - brew: doctl
+  linux:
+    - apt: doctl
+    - dnf: doctl
+
 pipx:
   windows:
     - scoop: pipx

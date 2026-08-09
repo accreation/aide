@@ -6,6 +6,7 @@
 | Tool | Description | Official | Windows | macOS | Linux |
 |------|-------------|----------|---------|-------|-------|
 | ansible | Ansible — IT automation and configuration management | [ansible.com](https://www.ansible.com) | winget, scoop, choco | brew | apt, dnf |
+| argocd | Argo CD — declarative GitOps continuous delivery for Kubernetes | [argo-cd.readthedocs.io](https://argo-cd.readthedocs.io) | winget, scoop | brew | curl |
 | aws | AWS CLI — manage AWS services from terminal | [aws.amazon.com/cli](https://aws.amazon.com/cli/) | winget, scoop, choco | brew | curl |
 | az | Azure CLI — manage Azure resources from terminal | [github.com/Azure/azure-cli](https://github.com/Azure/azure-cli) | winget | brew | curl |
 | bun | Bun — fast JavaScript runtime, bundler, and package manager | [bun.sh](https://bun.sh) | winget, scoop | brew | curl |
