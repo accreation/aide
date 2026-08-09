@@ -24,6 +24,7 @@
 | elixir | Elixir — dynamic, functional language for scalable applications | [elixir-lang.org](https://elixir-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | emacs | Emacs — extensible, customizable, self-documenting text editor | [gnu.org/software/emacs](https://www.gnu.org/software/emacs/) | winget, scoop, choco | brew | apt, dnf |
 | erlang | Erlang — programming language for building massively scalable systems | [erlang.org](https://www.erlang.org) | winget, scoop, choco | brew | apt, dnf |
+| eza | eza — modern replacement for ls | [github.com/eza-community/eza](https://github.com/eza-community/eza) | winget, scoop, choco | brew | apt, dnf |
 | fd | fd — fast, user-friendly alternative to `find` | [github.com/sharkdp/fd](https://github.com/sharkdp/fd) | winget, scoop, choco | brew | apt, dnf |
 | fzf | fzf — fuzzy finder for the command line | [github.com/junegunn/fzf](https://github.com/junegunn/fzf) | winget, scoop, choco | brew | apt, dnf |
 | gcloud | Google Cloud CLI — manage GCP resources from terminal | [cloud.google.com/sdk](https://cloud.google.com/sdk) | winget, scoop | brew | curl |

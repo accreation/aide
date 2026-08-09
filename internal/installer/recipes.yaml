@@ -836,6 +836,17 @@ bat:
     - apt: bat
     - dnf: bat
 
+eza:
+  windows:
+    - winget: eza-community.eza
+    - scoop: eza
+    - choco: eza
+  macos:
+    - brew: eza
+  linux:
+    - apt: eza
+    - dnf: eza
+
 pipx:
   windows:
     - scoop: pipx
