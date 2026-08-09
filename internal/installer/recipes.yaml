@@ -742,6 +742,16 @@ openssl:
     - apt: openssl
     - dnf: openssl
 
+cosign:
+  windows:
+    - scoop: cosign
+    - choco: cosign
+  macos:
+    - brew: cosign
+  linux:
+    - apt: cosign
+    - dnf: cosign
+
 pipx:
   windows:
     - scoop: pipx
