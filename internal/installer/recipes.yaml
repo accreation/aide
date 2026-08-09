@@ -889,6 +889,17 @@ make:
     - apt: make
     - dnf: make
 
+cmake:
+  windows:
+    - winget: Kitware.CMake
+    - scoop: cmake
+    - choco: cmake
+  macos:
+    - brew: cmake
+  linux:
+    - apt: cmake
+    - dnf: cmake
+
 pipx:
   windows:
     - scoop: pipx

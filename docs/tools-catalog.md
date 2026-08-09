@@ -14,6 +14,7 @@
 | bat | bat — cat clone with syntax highlighting and Git integration | [github.com/sharkdp/bat](https://github.com/sharkdp/bat) | winget, scoop, choco | brew | apt, dnf |
 | buildah | Buildah — tool for building OCI container images | [buildah.io](https://buildah.io) | scoop | brew | apt, dnf |
 | clickhouse | ClickHouse client — interact with ClickHouse databases | [clickhouse.com](https://clickhouse.com) | — | brew | curl |
+| cmake | CMake — cross-platform build system generator | [cmake.org](https://cmake.org) | winget, scoop, choco | brew | apt, dnf |
 | cosign | Cosign — container signing, verification, and storage | [github.com/sigstore/cosign](https://github.com/sigstore/cosign) | scoop, choco | brew | apt, dnf |
 | bun | Bun — fast JavaScript runtime, bundler, and package manager | [bun.sh](https://bun.sh) | winget, scoop | brew | curl |
 | datadog | Datadog Agent — monitoring and security platform agent | [datadoghq.com](https://www.datadoghq.com) | scoop, choco | brew | apt, dnf |
