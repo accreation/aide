@@ -41,6 +41,7 @@
 | mongosh | MongoDB Shell — interact with MongoDB databases | [mongodb.com/products/mongosh](https://www.mongodb.com/products/mongosh) | winget, scoop | brew | apt, dnf |
 | mysql | MySQL client — interact with MySQL databases | [mysql.com](https://www.mysql.com) | winget, scoop, choco | brew | apt, dnf |
 | netcat | Netcat — versatile networking utility | [netcat.sourceforge.net](https://netcat.sourceforge.net) | scoop, choco | brew | apt, dnf |
+| ngrok | ngrok — secure introspectable tunnels to localhost | [ngrok.com](https://ngrok.com) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
 | pack | Pack — Cloud Native Buildpacks CLI | [buildpacks.io](https://buildpacks.io) | scoop, choco | brew | apt, dnf |

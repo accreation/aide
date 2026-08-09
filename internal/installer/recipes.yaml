@@ -628,6 +628,17 @@ netcat:
     - apt: netcat-openbsd
     - dnf: nmap-ncat
 
+ngrok:
+  windows:
+    - winget: ngrok.ngrok
+    - scoop: ngrok
+    - choco: ngrok
+  macos:
+    - brew: ngrok
+  linux:
+    - apt: ngrok
+    - dnf: ngrok
+
 pipx:
   windows:
     - scoop: pipx
