@@ -752,6 +752,17 @@ cosign:
     - apt: cosign
     - dnf: cosign
 
+neovim:
+  windows:
+    - winget: Neovim.Neovim
+    - scoop: neovim
+    - choco: neovim
+  macos:
+    - brew: neovim
+  linux:
+    - apt: neovim
+    - dnf: neovim
+
 pipx:
   windows:
     - scoop: pipx

@@ -45,6 +45,7 @@
 | maven | Maven — software project management and comprehension tool | [maven.apache.org](https://maven.apache.org) | winget, scoop, choco | brew | apt, dnf |
 | mongosh | MongoDB Shell — interact with MongoDB databases | [mongodb.com/products/mongosh](https://www.mongodb.com/products/mongosh) | winget, scoop | brew | apt, dnf |
 | mysql | MySQL client — interact with MySQL databases | [mysql.com](https://www.mysql.com) | winget, scoop, choco | brew | apt, dnf |
+| neovim | Neovim — hyperextensible Vim-based text editor | [neovim.io](https://neovim.io) | winget, scoop, choco | brew | apt, dnf |
 | netcat | Netcat — versatile networking utility | [netcat.sourceforge.net](https://netcat.sourceforge.net) | scoop, choco | brew | apt, dnf |
 | newrelic | New Relic CLI — observability platform command-line interface | [newrelic.com](https://newrelic.com) | winget, scoop | brew | apt, dnf |
 | ngrok | ngrok — secure introspectable tunnels to localhost | [ngrok.com](https://ngrok.com) | winget, scoop, choco | brew | apt, dnf |
