@@ -59,5 +59,6 @@
 | sqlite3 | SQLite3 — command-line interface for SQLite | [sqlite.org](https://www.sqlite.org) | winget, scoop, choco | brew | apt, dnf |
 | swift | Swift — powerful and intuitive programming language by Apple | [swift.org](https://www.swift.org) | winget, scoop | brew | apt, dnf |
 | terraform | Terraform — infrastructure as code tool by HashiCorp | [terraform.io](https://www.terraform.io) | winget, scoop, choco | brew | apt, dnf |
+| wget | Wget — non-interactive network downloader | [gnu.org/software/wget](https://www.gnu.org/software/wget/) | winget, scoop, choco | brew | apt, dnf |
 | yarn | Yarn — fast, reliable JavaScript package manager | [yarnpkg.com](https://yarnpkg.com) | winget, scoop, choco | brew | apt, dnf |
 | zig | Zig — general-purpose programming language and toolchain | [ziglang.org](https://ziglang.org) | winget, scoop, choco | brew | apt, dnf |

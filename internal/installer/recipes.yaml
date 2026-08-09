@@ -585,6 +585,17 @@ sqlite3:
     - apt: sqlite3
     - dnf: sqlite
 
+wget:
+  windows:
+    - winget: GNU.Wget
+    - scoop: wget
+    - choco: wget
+  macos:
+    - brew: wget
+  linux:
+    - apt: wget
+    - dnf: wget
+
 pipx:
   windows:
     - scoop: pipx
