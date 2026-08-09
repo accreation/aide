@@ -337,6 +337,15 @@ podman:
     - apt: podman
     - dnf: podman
 
+buildah:
+  windows:
+    - scoop: buildah
+  macos:
+    - brew: buildah
+  linux:
+    - apt: buildah
+    - dnf: buildah
+
 pipx:
   windows:
     - scoop: pipx
