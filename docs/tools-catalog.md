@@ -28,6 +28,7 @@
 | jq | jq — lightweight JSON processor for the command line | [github.com/jqlang/jq](https://github.com/jqlang/jq) | winget, scoop, choco | brew | apt, dnf |
 | kubectl | kubectl — Kubernetes command-line tool | [kubernetes.io](https://kubernetes.io/docs/reference/kubectl/) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
+| pack | Pack — Cloud Native Buildpacks CLI | [buildpacks.io](https://buildpacks.io) | scoop, choco | brew | apt, dnf |
 | pipx | pipx — install and run Python applications in isolated environments | [github.com/pypa/pipx](https://github.com/pypa/pipx) | scoop, pip | brew | apt, dnf, pip |
 | pnpm | pnpm — fast, disk-space efficient package manager | [pnpm.io](https://pnpm.io) | winget, scoop, choco | brew | curl |
 | podman | Podman — daemonless container engine | [podman.io](https://podman.io) | winget, scoop, choco | brew | apt, dnf |

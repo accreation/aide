@@ -353,6 +353,16 @@ skopeo:
     - apt: skopeo
     - dnf: skopeo
 
+pack:
+  windows:
+    - scoop: pack
+    - choco: pack
+  macos:
+    - brew: buildpacks/tap/pack
+  linux:
+    - apt: pack-cli
+    - dnf: pack-cli
+
 pipx:
   windows:
     - scoop: pipx
