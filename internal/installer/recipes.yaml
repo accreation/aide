@@ -83,6 +83,16 @@ python:
     - apt: python3
     - dnf: python3
 
+redis:
+  windows:
+    - scoop: redis
+    - choco: redis-64
+  macos:
+    - brew: redis
+  linux:
+    - apt: redis-tools
+    - dnf: redis
+
 nodejs:
   windows:
     - winget: OpenJS.NodeJS.LTS

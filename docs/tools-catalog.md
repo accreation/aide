@@ -46,6 +46,7 @@
 | postgresql | PostgreSQL client tools — interact with PostgreSQL databases | [postgresql.org](https://www.postgresql.org) | winget, scoop, choco | brew | apt, dnf |
 | pulumi | Pulumi — infrastructure as code using real programming languages | [pulumi.com](https://www.pulumi.com) | winget, scoop, choco | brew | curl |
 | python | Python — programming language runtime (3.12) | [python.org](https://www.python.org) | winget, scoop, choco | brew | apt, dnf |
+| redis | Redis CLI — interact with Redis data stores | [redis.io](https://redis.io) | scoop, choco | brew | apt, dnf |
 | rg | ripgrep — ultra-fast text search tool | [github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) | winget, scoop, choco | brew | apt, dnf |
 | ruby | Ruby — dynamic, open source programming language | [ruby-lang.org](https://www.ruby-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | rtk | RTK — AI-powered terminal toolkit | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) | github | brew | curl |
