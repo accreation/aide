@@ -607,6 +607,17 @@ httpie:
     - apt: httpie
     - dnf: httpie
 
+yq:
+  windows:
+    - winget: MikeFarah.yq
+    - scoop: yq
+    - choco: yq
+  macos:
+    - brew: yq
+  linux:
+    - apt: yq
+    - dnf: yq
+
 pipx:
   windows:
     - scoop: pipx
