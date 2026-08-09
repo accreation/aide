@@ -326,6 +326,17 @@ doctl:
     - apt: doctl
     - dnf: doctl
 
+podman:
+  windows:
+    - winget: RedHat.Podman
+    - scoop: podman
+    - choco: podman
+  macos:
+    - brew: podman
+  linux:
+    - apt: podman
+    - dnf: podman
+
 pipx:
   windows:
     - scoop: pipx

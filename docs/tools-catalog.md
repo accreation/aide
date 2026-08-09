@@ -29,6 +29,7 @@
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | pipx | pipx — install and run Python applications in isolated environments | [github.com/pypa/pipx](https://github.com/pypa/pipx) | scoop, pip | brew | apt, dnf, pip |
 | pnpm | pnpm — fast, disk-space efficient package manager | [pnpm.io](https://pnpm.io) | winget, scoop, choco | brew | curl |
+| podman | Podman — daemonless container engine | [podman.io](https://podman.io) | winget, scoop, choco | brew | apt, dnf |
 | pulumi | Pulumi — infrastructure as code using real programming languages | [pulumi.com](https://www.pulumi.com) | winget, scoop, choco | brew | curl |
 | python | Python — programming language runtime (3.12) | [python.org](https://www.python.org) | winget, scoop, choco | brew | apt, dnf |
 | rg | ripgrep — ultra-fast text search tool | [github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) | winget, scoop, choco | brew | apt, dnf |
