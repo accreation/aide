@@ -7,16 +7,16 @@
 |------|-------------|----------|---------|-------|-------|
 | age | age — simple, modern file encryption tool | [github.com/FiloSottile/age](https://github.com/FiloSottile/age) | scoop, choco | brew | apt, dnf |
 | ansible | Ansible — IT automation and configuration management | [ansible.com](https://www.ansible.com) | winget, scoop, choco | brew | apt, dnf |
-| atuin | Atuin — magical shell history | [atuin.sh](https://atuin.sh) | scoop | brew | apt, dnf |
 | argocd | Argo CD — declarative GitOps continuous delivery for Kubernetes | [argo-cd.readthedocs.io](https://argo-cd.readthedocs.io) | winget, scoop | brew | curl |
+| atuin | Atuin — magical shell history | [atuin.sh](https://atuin.sh) | scoop | brew | apt, dnf |
 | aws | AWS CLI — manage AWS services from terminal | [aws.amazon.com/cli](https://aws.amazon.com/cli/) | winget, scoop, choco | brew | curl |
 | az | Azure CLI — manage Azure resources from terminal | [github.com/Azure/azure-cli](https://github.com/Azure/azure-cli) | winget | brew | curl |
 | bat | bat — cat clone with syntax highlighting and Git integration | [github.com/sharkdp/bat](https://github.com/sharkdp/bat) | winget, scoop, choco | brew | apt, dnf |
 | buildah | Buildah — tool for building OCI container images | [buildah.io](https://buildah.io) | scoop | brew | apt, dnf |
+| bun | Bun — fast JavaScript runtime, bundler, and package manager | [bun.sh](https://bun.sh) | winget, scoop | brew | curl |
 | clickhouse | ClickHouse client — interact with ClickHouse databases | [clickhouse.com](https://clickhouse.com) | — | brew | curl |
 | cmake | CMake — cross-platform build system generator | [cmake.org](https://cmake.org) | winget, scoop, choco | brew | apt, dnf |
 | cosign | Cosign — container signing, verification, and storage | [github.com/sigstore/cosign](https://github.com/sigstore/cosign) | scoop, choco | brew | apt, dnf |
-| bun | Bun — fast JavaScript runtime, bundler, and package manager | [bun.sh](https://bun.sh) | winget, scoop | brew | curl |
 | datadog | Datadog Agent — monitoring and security platform agent | [datadoghq.com](https://www.datadoghq.com) | scoop, choco | brew | apt, dnf |
 | deno | Deno — secure JavaScript/TypeScript runtime | [deno.com](https://deno.com) | winget, scoop, choco | brew | curl |
 | docker | Docker — container platform for building and running applications | [docker.com](https://www.docker.com) | winget, scoop, choco | brew | apt, dnf |
@@ -56,15 +56,15 @@
 | neovim | Neovim — hyperextensible Vim-based text editor | [neovim.io](https://neovim.io) | winget, scoop, choco | brew | apt, dnf |
 | netcat | Netcat — versatile networking utility | [netcat.sourceforge.net](https://netcat.sourceforge.net) | scoop, choco | brew | apt, dnf |
 | newrelic | New Relic CLI — observability platform command-line interface | [newrelic.com](https://newrelic.com) | winget, scoop | brew | apt, dnf |
-| ninja | Ninja — small build system with a focus on speed | [ninja-build.org](https://ninja-build.org) | winget, scoop, choco | brew | apt, dnf |
 | ngrok | ngrok — secure introspectable tunnels to localhost | [ngrok.com](https://ngrok.com) | winget, scoop, choco | brew | apt, dnf |
+| ninja | Ninja — small build system with a focus on speed | [ninja-build.org](https://ninja-build.org) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | openssl | OpenSSL — toolkit for TLS/SSL protocols and cryptography | [openssl.org](https://www.openssl.org) | winget, scoop, choco | brew | apt, dnf |
 | opentelemetry-collector | OpenTelemetry Collector — vendor-agnostic telemetry collection | [opentelemetry.io](https://opentelemetry.io) | scoop | brew | curl |
-| perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
 | pack | Pack — Cloud Native Buildpacks CLI | [buildpacks.io](https://buildpacks.io) | scoop, choco | brew | apt, dnf |
-| pipx | pipx — install and run Python applications in isolated environments | [github.com/pypa/pipx](https://github.com/pypa/pipx) | scoop, pip | brew | apt, dnf, pip |
+| perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
 | php | PHP — popular general-purpose scripting language | [php.net](https://www.php.net) | winget, scoop, choco | brew | apt, dnf |
+| pipx | pipx — install and run Python applications in isolated environments | [github.com/pypa/pipx](https://github.com/pypa/pipx) | scoop, pip | brew | apt, dnf, pip |
 | pnpm | pnpm — fast, disk-space efficient package manager | [pnpm.io](https://pnpm.io) | winget, scoop, choco | brew | curl |
 | podman | Podman — daemonless container engine | [podman.io](https://podman.io) | winget, scoop, choco | brew | apt, dnf |
 | postgresql | PostgreSQL client tools — interact with PostgreSQL databases | [postgresql.org](https://www.postgresql.org) | winget, scoop, choco | brew | apt, dnf |
@@ -73,8 +73,8 @@
 | python | Python — programming language runtime (3.12) | [python.org](https://www.python.org) | winget, scoop, choco | brew | apt, dnf |
 | redis | Redis CLI — interact with Redis data stores | [redis.io](https://redis.io) | scoop, choco | brew | apt, dnf |
 | rg | ripgrep — ultra-fast text search tool | [github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) | winget, scoop, choco | brew | apt, dnf |
-| ruby | Ruby — dynamic, open source programming language | [ruby-lang.org](https://www.ruby-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | rtk | RTK — AI-powered terminal toolkit | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) | github | brew | curl |
+| ruby | Ruby — dynamic, open source programming language | [ruby-lang.org](https://www.ruby-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | rustup | Rustup — Rust toolchain installer | [rustup.rs](https://rustup.rs) | winget, scoop | curl | curl |
 | scala | Scala — scalable language combining OOP and functional programming | [scala-lang.org](https://www.scala-lang.org) | scoop, choco | brew | apt, dnf |
 | skopeo | Skopeo — work with remote container images | [github.com/containers/skopeo](https://github.com/containers/skopeo) | — | brew | apt, dnf |
