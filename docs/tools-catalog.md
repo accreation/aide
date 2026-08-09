@@ -12,6 +12,7 @@
 | buildah | Buildah — tool for building OCI container images | [buildah.io](https://buildah.io) | scoop | brew | apt, dnf |
 | clickhouse | ClickHouse client — interact with ClickHouse databases | [clickhouse.com](https://clickhouse.com) | — | brew | curl |
 | bun | Bun — fast JavaScript runtime, bundler, and package manager | [bun.sh](https://bun.sh) | winget, scoop | brew | curl |
+| datadog | Datadog Agent — monitoring and security platform agent | [datadoghq.com](https://www.datadoghq.com) | scoop, choco | brew | apt, dnf |
 | deno | Deno — secure JavaScript/TypeScript runtime | [deno.com](https://deno.com) | winget, scoop, choco | brew | curl |
 | docker | Docker — container platform for building and running applications | [docker.com](https://www.docker.com) | winget, scoop, choco | brew | apt, dnf |
 | doctl | DigitalOcean CLI — manage DigitalOcean resources from terminal | [docs.digitalocean.com](https://docs.digitalocean.com/reference/doctl/) | winget, scoop | brew | apt, dnf |

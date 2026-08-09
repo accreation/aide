@@ -668,6 +668,16 @@ opentelemetry-collector:
   linux:
     - curl: "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/latest/download/otelcol-contrib_linux_amd64.tar.gz | tar xz -C /usr/local/bin"
 
+datadog:
+  windows:
+    - scoop: datadog-agent
+    - choco: datadog-agent
+  macos:
+    - brew: datadog-agent
+  linux:
+    - apt: datadog-agent
+    - dnf: datadog-agent
+
 pipx:
   windows:
     - scoop: pipx
