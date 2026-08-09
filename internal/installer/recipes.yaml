@@ -699,6 +699,16 @@ vault:
     - apt: vault
     - dnf: vault
 
+age:
+  windows:
+    - scoop: age
+    - choco: age
+  macos:
+    - brew: age
+  linux:
+    - apt: age
+    - dnf: age
+
 pipx:
   windows:
     - scoop: pipx
