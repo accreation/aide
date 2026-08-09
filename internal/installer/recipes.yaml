@@ -396,6 +396,17 @@ perl:
     - apt: perl
     - dnf: perl
 
+lua:
+  windows:
+    - winget: Lua.Lua
+    - scoop: lua
+    - choco: lua
+  macos:
+    - brew: lua
+  linux:
+    - apt: lua5.4
+    - dnf: lua
+
 pipx:
   windows:
     - scoop: pipx
