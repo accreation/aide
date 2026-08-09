@@ -133,6 +133,16 @@ rustup:
   linux:
     - curl: "https://sh.rustup.rs | sh -s -- -y"
 
+scala:
+  windows:
+    - scoop: scala
+    - choco: scala
+  macos:
+    - brew: scala
+  linux:
+    - apt: scala
+    - dnf: scala
+
 java:
   windows:
     - winget: EclipseAdoptium.Temurin.21.JDK

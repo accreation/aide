@@ -29,7 +29,6 @@
 | jq | jq — lightweight JSON processor for the command line | [github.com/jqlang/jq](https://github.com/jqlang/jq) | winget, scoop, choco | brew | apt, dnf |
 | kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
 | kubectl | kubectl — Kubernetes command-line tool | [kubernetes.io](https://kubernetes.io/docs/reference/kubectl/) | winget, scoop, choco | brew | apt, dnf |
-| kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
 | lua | Lua — lightweight, embeddable scripting language | [lua.org](https://www.lua.org) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | perl | Perl — highly capable, feature-rich programming language | [perl.org](https://www.perl.org) | winget, scoop, choco | brew | apt, dnf |
@@ -44,6 +43,7 @@
 | ruby | Ruby — dynamic, open source programming language | [ruby-lang.org](https://www.ruby-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | rtk | RTK — AI-powered terminal toolkit | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) | github | brew | curl |
 | rustup | Rustup — Rust toolchain installer | [rustup.rs](https://rustup.rs) | winget, scoop | curl | curl |
+| scala | Scala — scalable language combining OOP and functional programming | [scala-lang.org](https://www.scala-lang.org) | scoop, choco | brew | apt, dnf |
 | skopeo | Skopeo — work with remote container images | [github.com/containers/skopeo](https://github.com/containers/skopeo) | — | brew | apt, dnf |
 | swift | Swift — powerful and intuitive programming language by Apple | [swift.org](https://www.swift.org) | winget, scoop | brew | apt, dnf |
 | terraform | Terraform — infrastructure as code tool by HashiCorp | [terraform.io](https://www.terraform.io) | winget, scoop, choco | brew | apt, dnf |
