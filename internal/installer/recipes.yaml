@@ -785,6 +785,16 @@ emacs:
     - apt: emacs
     - dnf: emacs
 
+helix:
+  windows:
+    - winget: Helix.Helix
+    - scoop: helix
+  macos:
+    - brew: helix
+  linux:
+    - apt: helix
+    - dnf: helix
+
 pipx:
   windows:
     - scoop: pipx
