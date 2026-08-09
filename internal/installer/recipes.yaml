@@ -297,6 +297,17 @@ graphify:
     - pipx: graphifyy
     - pip: graphifyy
 
+groovy:
+  windows:
+    - winget: Apache.Groovy
+    - scoop: groovy
+    - choco: groovy
+  macos:
+    - brew: groovy
+  linux:
+    - apt: groovy
+    - dnf: groovy
+
 ansible:
   windows:
     - winget: RedHat.Ansible
@@ -438,16 +449,6 @@ zig:
   linux:
     - apt: zig
     - dnf: zig
-
-swift:
-  windows:
-    - winget: Swift.Toolchain
-    - scoop: swift
-  macos:
-    - brew: swift
-  linux:
-    - apt: swiftlang
-    - dnf: swift-lang
 
 pipx:
   windows:

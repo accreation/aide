@@ -23,6 +23,7 @@
 | glab | GitLab CLI — manage GitLab repos, MRs, issues from terminal | [gitlab.com/gitlab-org/cli](https://gitlab.com/gitlab-org/cli) | winget | brew | apt, dnf |
 | go | Go — systems programming language and toolchain | [go.dev](https://go.dev) | winget, scoop, choco | brew | apt, dnf |
 | graphify | Graphify — generate visual graphs from codebases | [github.com/rtk-ai/graphify](https://github.com/rtk-ai/graphify) | pipx, pip | pipx, pip | pipx, pip |
+| groovy | Groovy — powerful, optionally typed language for the JVM | [groovy-lang.org](https://groovy-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | helm | Helm — Kubernetes package manager | [helm.sh](https://helm.sh) | winget, scoop, choco | brew | apt, dnf |
 | java | OpenJDK — Java development kit (Temurin 21) | [adoptium.net](https://adoptium.net) | winget, scoop, choco | brew | apt, dnf |
 | jq | jq — lightweight JSON processor for the command line | [github.com/jqlang/jq](https://github.com/jqlang/jq) | winget, scoop, choco | brew | apt, dnf |
