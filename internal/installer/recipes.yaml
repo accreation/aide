@@ -688,6 +688,17 @@ newrelic:
     - apt: newrelic-cli
     - dnf: newrelic-cli
 
+vault:
+  windows:
+    - winget: Hashicorp.Vault
+    - scoop: vault
+    - choco: vault
+  macos:
+    - brew: vault
+  linux:
+    - apt: vault
+    - dnf: vault
+
 pipx:
   windows:
     - scoop: pipx
