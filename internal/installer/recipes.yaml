@@ -618,6 +618,16 @@ yq:
     - apt: yq
     - dnf: yq
 
+netcat:
+  windows:
+    - scoop: netcat
+    - choco: netcat
+  macos:
+    - brew: netcat
+  linux:
+    - apt: netcat-openbsd
+    - dnf: nmap-ncat
+
 pipx:
   windows:
     - scoop: pipx
