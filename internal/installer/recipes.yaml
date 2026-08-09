@@ -858,6 +858,17 @@ zoxide:
     - apt: zoxide
     - dnf: zoxide
 
+starship:
+  windows:
+    - winget: Starship.Starship
+    - scoop: starship
+    - choco: starship
+  macos:
+    - brew: starship
+  linux:
+    - apt: starship
+    - dnf: starship
+
 pipx:
   windows:
     - scoop: pipx
