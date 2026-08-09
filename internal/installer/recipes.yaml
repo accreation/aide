@@ -175,6 +175,17 @@ elixir:
     - apt: elixir
     - dnf: elixir
 
+erlang:
+  windows:
+    - winget: Erlang.Erlang
+    - scoop: erlang
+    - choco: erlang
+  macos:
+    - brew: erlang
+  linux:
+    - apt: erlang
+    - dnf: erlang
+
 kubectl:
   windows:
     - winget: Kubernetes.kubectl
