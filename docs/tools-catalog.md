@@ -65,6 +65,7 @@
 | rustup | Rustup — Rust toolchain installer | [rustup.rs](https://rustup.rs) | winget, scoop | curl | curl |
 | scala | Scala — scalable language combining OOP and functional programming | [scala-lang.org](https://www.scala-lang.org) | scoop, choco | brew | apt, dnf |
 | skopeo | Skopeo — work with remote container images | [github.com/containers/skopeo](https://github.com/containers/skopeo) | — | brew | apt, dnf |
+| sops | SOPS — secrets management with encryption support | [github.com/getsops/sops](https://github.com/getsops/sops) | winget, scoop, choco | brew | apt, dnf |
 | sqlite3 | SQLite3 — command-line interface for SQLite | [sqlite.org](https://www.sqlite.org) | winget, scoop, choco | brew | apt, dnf |
 | swift | Swift — powerful and intuitive programming language by Apple | [swift.org](https://www.swift.org) | winget, scoop | brew | apt, dnf |
 | terraform | Terraform — infrastructure as code tool by HashiCorp | [terraform.io](https://www.terraform.io) | winget, scoop, choco | brew | apt, dnf |

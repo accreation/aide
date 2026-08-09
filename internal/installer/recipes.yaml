@@ -709,6 +709,17 @@ age:
     - apt: age
     - dnf: age
 
+sops:
+  windows:
+    - winget: Mozilla.Sops
+    - scoop: sops
+    - choco: sops
+  macos:
+    - brew: sops
+  linux:
+    - apt: sops
+    - dnf: sops
+
 pipx:
   windows:
     - scoop: pipx
