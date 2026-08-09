@@ -124,6 +124,17 @@ go:
     - apt: golang-go
     - dnf: golang
 
+gradle:
+  windows:
+    - winget: Gradle.Gradle
+    - scoop: gradle
+    - choco: gradle
+  macos:
+    - brew: gradle
+  linux:
+    - apt: gradle
+    - dnf: gradle
+
 rustup:
   windows:
     - winget: Rustlang.Rustup
