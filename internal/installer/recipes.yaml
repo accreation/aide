@@ -564,6 +564,16 @@ zig:
     - apt: zig
     - dnf: zig
 
+duckdb:
+  windows:
+    - winget: DuckDB.DuckDB
+    - scoop: duckdb
+  macos:
+    - brew: duckdb
+  linux:
+    - apt: duckdb
+    - dnf: duckdb
+
 pipx:
   windows:
     - scoop: pipx

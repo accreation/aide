@@ -16,6 +16,7 @@
 | docker | Docker — container platform for building and running applications | [docker.com](https://www.docker.com) | winget, scoop, choco | brew | apt, dnf |
 | doctl | DigitalOcean CLI — manage DigitalOcean resources from terminal | [docs.digitalocean.com](https://docs.digitalocean.com/reference/doctl/) | winget, scoop | brew | apt, dnf |
 | dotnet | .NET SDK — build cross-platform applications with C#/F# | [dotnet.microsoft.com](https://dotnet.microsoft.com) | winget, scoop, choco | brew | curl |
+| duckdb | DuckDB — in-process SQL OLAP database management system | [duckdb.org](https://duckdb.org) | winget, scoop | brew | apt, dnf |
 | elixir | Elixir — dynamic, functional language for scalable applications | [elixir-lang.org](https://elixir-lang.org) | winget, scoop, choco | brew | apt, dnf |
 | erlang | Erlang — programming language for building massively scalable systems | [erlang.org](https://www.erlang.org) | winget, scoop, choco | brew | apt, dnf |
 | fd | fd — fast, user-friendly alternative to `find` | [github.com/sharkdp/fd](https://github.com/sharkdp/fd) | winget, scoop, choco | brew | apt, dnf |
