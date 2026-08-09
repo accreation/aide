@@ -678,6 +678,16 @@ datadog:
     - apt: datadog-agent
     - dnf: datadog-agent
 
+newrelic:
+  windows:
+    - winget: NewRelic.NewRelicCLI
+    - scoop: newrelic-cli
+  macos:
+    - brew: newrelic-cli
+  linux:
+    - apt: newrelic-cli
+    - dnf: newrelic-cli
+
 pipx:
   windows:
     - scoop: pipx

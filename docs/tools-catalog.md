@@ -43,6 +43,7 @@
 | mongosh | MongoDB Shell — interact with MongoDB databases | [mongodb.com/products/mongosh](https://www.mongodb.com/products/mongosh) | winget, scoop | brew | apt, dnf |
 | mysql | MySQL client — interact with MySQL databases | [mysql.com](https://www.mysql.com) | winget, scoop, choco | brew | apt, dnf |
 | netcat | Netcat — versatile networking utility | [netcat.sourceforge.net](https://netcat.sourceforge.net) | scoop, choco | brew | apt, dnf |
+| newrelic | New Relic CLI — observability platform command-line interface | [newrelic.com](https://newrelic.com) | winget, scoop | brew | apt, dnf |
 | ngrok | ngrok — secure introspectable tunnels to localhost | [ngrok.com](https://ngrok.com) | winget, scoop, choco | brew | apt, dnf |
 | nodejs | Node.js — JavaScript runtime (LTS) | [nodejs.org](https://nodejs.org) | winget, scoop, choco | brew | apt, dnf |
 | opentelemetry-collector | OpenTelemetry Collector — vendor-agnostic telemetry collection | [opentelemetry.io](https://opentelemetry.io) | scoop | brew | curl |
