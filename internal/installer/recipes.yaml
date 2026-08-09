@@ -763,6 +763,17 @@ neovim:
     - apt: neovim
     - dnf: neovim
 
+vim:
+  windows:
+    - winget: vim.vim
+    - scoop: vim
+    - choco: vim
+  macos:
+    - brew: vim
+  linux:
+    - apt: vim
+    - dnf: vim
+
 pipx:
   windows:
     - scoop: pipx
