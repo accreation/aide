@@ -297,6 +297,16 @@ ansible:
     - apt: ansible
     - dnf: ansible
 
+pulumi:
+  windows:
+    - winget: Pulumi.Pulumi
+    - scoop: pulumi
+    - choco: pulumi
+  macos:
+    - brew: pulumi
+  linux:
+    - curl: "https://get.pulumi.com | sh"
+
 pipx:
   windows:
     - scoop: pipx
