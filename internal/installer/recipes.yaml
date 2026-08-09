@@ -869,6 +869,15 @@ starship:
     - apt: starship
     - dnf: starship
 
+atuin:
+  windows:
+    - scoop: atuin
+  macos:
+    - brew: atuin
+  linux:
+    - apt: atuin
+    - dnf: atuin
+
 pipx:
   windows:
     - scoop: pipx

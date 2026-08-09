@@ -7,6 +7,7 @@
 |------|-------------|----------|---------|-------|-------|
 | age | age — simple, modern file encryption tool | [github.com/FiloSottile/age](https://github.com/FiloSottile/age) | scoop, choco | brew | apt, dnf |
 | ansible | Ansible — IT automation and configuration management | [ansible.com](https://www.ansible.com) | winget, scoop, choco | brew | apt, dnf |
+| atuin | Atuin — magical shell history | [atuin.sh](https://atuin.sh) | scoop | brew | apt, dnf |
 | argocd | Argo CD — declarative GitOps continuous delivery for Kubernetes | [argo-cd.readthedocs.io](https://argo-cd.readthedocs.io) | winget, scoop | brew | curl |
 | aws | AWS CLI — manage AWS services from terminal | [aws.amazon.com/cli](https://aws.amazon.com/cli/) | winget, scoop, choco | brew | curl |
 | az | Azure CLI — manage Azure resources from terminal | [github.com/Azure/azure-cli](https://github.com/Azure/azure-cli) | winget | brew | curl |
