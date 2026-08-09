@@ -241,6 +241,17 @@ jq:
     - apt: jq
     - dnf: jq
 
+kotlin:
+  windows:
+    - winget: JetBrains.Kotlin
+    - scoop: kotlin
+    - choco: kotlin
+  macos:
+    - brew: kotlin
+  linux:
+    - apt: kotlin
+    - dnf: kotlin
+
 rg:
   windows:
     - winget: BurntSushi.ripgrep.MSVC

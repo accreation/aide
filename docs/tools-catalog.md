@@ -26,6 +26,7 @@
 | helm | Helm — Kubernetes package manager | [helm.sh](https://helm.sh) | winget, scoop, choco | brew | apt, dnf |
 | java | OpenJDK — Java development kit (Temurin 21) | [adoptium.net](https://adoptium.net) | winget, scoop, choco | brew | apt, dnf |
 | jq | jq — lightweight JSON processor for the command line | [github.com/jqlang/jq](https://github.com/jqlang/jq) | winget, scoop, choco | brew | apt, dnf |
+| kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
 | kubectl | kubectl — Kubernetes command-line tool | [kubernetes.io](https://kubernetes.io/docs/reference/kubectl/) | winget, scoop, choco | brew | apt, dnf |
 | kotlin | Kotlin — modern programming language for the JVM | [kotlinlang.org](https://kotlinlang.org) | winget, scoop, choco | brew | apt, dnf |
 | lua | Lua — lightweight, embeddable scripting language | [lua.org](https://www.lua.org) | winget, scoop, choco | brew | apt, dnf |
