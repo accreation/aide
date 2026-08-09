@@ -816,6 +816,15 @@ tmux:
     - apt: tmux
     - dnf: tmux
 
+zellij:
+  windows:
+    - scoop: zellij
+  macos:
+    - brew: zellij
+  linux:
+    - apt: zellij
+    - dnf: zellij
+
 pipx:
   windows:
     - scoop: pipx
