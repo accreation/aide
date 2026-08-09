@@ -363,6 +363,17 @@ pack:
     - apt: pack-cli
     - dnf: pack-cli
 
+php:
+  windows:
+    - winget: PHP.PHP
+    - scoop: php
+    - choco: php
+  macos:
+    - brew: php
+  linux:
+    - apt: php-cli
+    - dnf: php-cli
+
 pipx:
   windows:
     - scoop: pipx
