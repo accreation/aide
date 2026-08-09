@@ -10,6 +10,7 @@
 | argocd | Argo CD — declarative GitOps continuous delivery for Kubernetes | [argo-cd.readthedocs.io](https://argo-cd.readthedocs.io) | winget, scoop | brew | curl |
 | aws | AWS CLI — manage AWS services from terminal | [aws.amazon.com/cli](https://aws.amazon.com/cli/) | winget, scoop, choco | brew | curl |
 | az | Azure CLI — manage Azure resources from terminal | [github.com/Azure/azure-cli](https://github.com/Azure/azure-cli) | winget | brew | curl |
+| bat | bat — cat clone with syntax highlighting and Git integration | [github.com/sharkdp/bat](https://github.com/sharkdp/bat) | winget, scoop, choco | brew | apt, dnf |
 | buildah | Buildah — tool for building OCI container images | [buildah.io](https://buildah.io) | scoop | brew | apt, dnf |
 | clickhouse | ClickHouse client — interact with ClickHouse databases | [clickhouse.com](https://clickhouse.com) | — | brew | curl |
 | cosign | Cosign — container signing, verification, and storage | [github.com/sigstore/cosign](https://github.com/sigstore/cosign) | scoop, choco | brew | apt, dnf |

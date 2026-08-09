@@ -825,6 +825,17 @@ zellij:
     - apt: zellij
     - dnf: zellij
 
+bat:
+  windows:
+    - winget: sharkdp.bat
+    - scoop: bat
+    - choco: bat
+  macos:
+    - brew: bat
+  linux:
+    - apt: bat
+    - dnf: bat
+
 pipx:
   windows:
     - scoop: pipx
