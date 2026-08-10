@@ -40,10 +40,18 @@ func Execute() error {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&recipesURL, "recipes-url", "", "URL to fetch external recipes from (env: AIDE_RECIPES_URL)")
-	// If no flag or env, use the build-time default (if set via ldflags).
-	if recipesURL == "" && DefaultRecipesURL != "" {
-		recipesURL = DefaultRecipesURL
+}
+
+// resolveRecipesURL applies the documented precedence: --recipes-url flag >
+// AIDE_RECIPES_URL env var > build-time DefaultRecipesURL > embedded recipes.
+func resolveRecipesURL() string {
+	if recipesURL != "" {
+		return recipesURL
 	}
+	if envURL := os.Getenv("AIDE_RECIPES_URL"); envURL != "" {
+		return envURL
+	}
+	return DefaultRecipesURL
 }
 
 func runCheck(cmd *cobra.Command, args []string) error {
