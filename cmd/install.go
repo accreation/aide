@@ -47,14 +47,8 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	// Resolve recipes URL: flag > env var > empty (embedded only)
-	url := recipesURL
-	if url == "" {
-		url = os.Getenv("AIDE_RECIPES_URL")
-	}
-
 	// Load recipes (embedded + optional remote)
-	recipes, err := installer.LoadRecipesWithRemote(url)
+	recipes, err := installer.LoadRecipesWithRemote(resolveRecipesURL())
 	if err != nil {
 		return fmt.Errorf("loading recipes: %w", err)
 	}
