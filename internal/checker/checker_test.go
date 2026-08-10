@@ -1,11 +1,34 @@
 package checker
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"aide/internal/config"
 	"aide/internal/display"
 )
+
+// writeFakeVersionTool creates an executable that prints version info to
+// stderr (mimicking `java -version`) with a zero exit code, and prepends its
+// directory to PATH for the duration of the test.
+func writeFakeVersionTool(t *testing.T, name, version string) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Skip("fake shell script tool not supported on windows")
+	}
+	dir := t.TempDir()
+	scriptPath := filepath.Join(dir, name)
+	script := fmt.Sprintf("#!/bin/sh\necho '%s version \"%s\"' >&2\nexit 0\n", name, version)
+	if err := os.WriteFile(scriptPath, []byte(script), 0o755); err != nil {
+		t.Fatalf("failed to write fake tool: %v", err)
+	}
+	origPath := os.Getenv("PATH")
+	os.Setenv("PATH", dir+string(os.PathListSeparator)+origPath)
+	t.Cleanup(func() { os.Setenv("PATH", origPath) })
+}
 
 func TestCheckProviderFound(t *testing.T) {
 	// Use a tool we know exists on almost all systems: "go"
@@ -75,6 +98,31 @@ func TestCheckToolsVersionConstraint(t *testing.T) {
 	}
 	if results[1].Ok {
 		t.Errorf("go should not satisfy >=999.0.0: %+v", results[1])
+	}
+}
+
+func TestCheckToolsVersionOnStderr(t *testing.T) {
+	writeFakeVersionTool(t, "fakejava", "17.0.9")
+
+	c := New(&config.Config{
+		Provider: "go",
+		Tools: []config.Tool{
+			{Name: "fakejava", Version: ">=11.0.0"},
+		},
+	})
+	results := c.CheckTools()
+	if len(results) != 1 {
+		t.Fatalf("expected 1 result, got %d", len(results))
+	}
+	r := results[0]
+	if !r.Found {
+		t.Errorf("expected Found=true for a binary on PATH, got %+v", r)
+	}
+	if r.Installed != "17.0.9" {
+		t.Errorf("expected version parsed from stderr output, got %+v", r)
+	}
+	if !r.Ok {
+		t.Errorf("expected Ok=true since 17.0.9 satisfies >=11.0.0, got %+v", r)
 	}
 }
 
