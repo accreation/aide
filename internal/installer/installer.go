@@ -34,28 +34,24 @@ func (i *Installer) Install(toolName string) error {
 // System PM tools emit a warning that they cannot be isolated.
 func (i *Installer) InstallWithOptions(toolName string, opts InstallOptions) error {
 	if opts.ProjectDir != "" {
-		return i.installIsolated(toolName, opts.ProjectDir, make(map[string]bool))
+		return i.installIsolated(toolName, opts.ProjectDir, opts.Version, make(map[string]bool))
 	}
-	return i.installGlobal(toolName, make(map[string]bool))
+	return i.installGlobal(toolName, opts.Version, make(map[string]bool))
 }
 
 // installGlobal installs a tool system-wide (current behavior).
-func (i *Installer) installGlobal(toolName string, seen map[string]bool) error {
-	return i.installWithGuard(toolName, "", seen)
+func (i *Installer) installGlobal(toolName, version string, seen map[string]bool) error {
+	return i.installWithGuardAndVersion(toolName, "", version, seen)
 }
 
 // installIsolated installs a tool into .aide/store/ and creates a shim.
-func (i *Installer) installIsolated(toolName, projectDir string, seen map[string]bool) error {
-	return i.installWithGuard(toolName, projectDir, seen)
+func (i *Installer) installIsolated(toolName, projectDir, version string, seen map[string]bool) error {
+	return i.installWithGuardAndVersion(toolName, projectDir, version, seen)
 }
 
-// installWithGuard resolves and installs prerequisites recursively,
-// guarding against circular dependencies.
-func (i *Installer) installWithGuard(toolName, projectDir string, seen map[string]bool) error {
-	return i.installWithGuardAndVersion(toolName, projectDir, "", seen)
-}
-
-// installWithGuardAndVersion is like installWithGuard but carries the version constraint.
+// installWithGuardAndVersion resolves and installs prerequisites recursively,
+// guarding against circular dependencies, and carries the version constraint
+// (used for github-recipe tools) through to installGithub.
 func (i *Installer) installWithGuardAndVersion(toolName, projectDir, version string, seen map[string]bool) error {
 	if seen[toolName] {
 		return fmt.Errorf("circular dependency: %s", toolName)
@@ -120,51 +116,46 @@ func (i *Installer) installWithGuardAndVersion(toolName, projectDir, version str
 	return nil
 }
 
-// installGithub handles github-type installation with optional isolated destDir.
+// installGithub handles github-type installation, in both global and isolated
+// (projectDir != "") mode. If a version constraint is given, it is resolved to
+// a concrete release via the GitHub API in either mode, and that same release
+// is reused for the download so the resolved version and the downloaded bits
+// can never diverge.
 func (i *Installer) installGithub(ownerRepo, assetPattern, binaryName, projectDir, version string) error {
-	destDir := ""
-	if projectDir != "" {
-		// Resolve version: if constraint given, find a concrete release matching it
-		// via GitHub API. The same release is reused for the download below so the
-		// resolved version and the downloaded bits can never diverge.
-		resolvedVersion := "latest"
-		var resolvedRelease *githubRelease
-		if version != "" {
-			release, err := fetchLatestReleaseMatching(ownerRepo, version)
-			if err != nil {
-				return fmt.Errorf("resolving version for %s with constraint %s: %w", binaryName, version, err)
-			}
-			resolvedRelease = release
-			resolvedVersion = strings.TrimPrefix(release.TagName, "v")
+	resolvedVersion := "latest"
+	var resolvedRelease *githubRelease
+	if version != "" {
+		release, err := fetchLatestReleaseMatching(ownerRepo, version)
+		if err != nil {
+			return fmt.Errorf("resolving version for %s with constraint %s: %w", binaryName, version, err)
 		}
-		store := NewStore(projectDir)
-		destDir = store.BinDir(binaryName, resolvedVersion)
+		resolvedRelease = release
+		resolvedVersion = strings.TrimPrefix(release.TagName, "v")
+	}
 
-		// Skip if already installed
-		if store.IsInstalled(binaryName, resolvedVersion) {
-			fmt.Printf("  %s %s already installed in .aide/store/, skipping\n", binaryName, resolvedVersion)
-			return nil
-		}
+	if projectDir == "" {
+		return installFromGithub(ownerRepo, assetPattern, binaryName, "", resolvedRelease)
+	}
 
-		if err := installFromGithub(ownerRepo, assetPattern, binaryName, destDir, resolvedRelease); err != nil {
-			return err
-		}
+	store := NewStore(projectDir)
+	destDir := store.BinDir(binaryName, resolvedVersion)
 
-		// Create shim
-		if err := CreateShim(projectDir, binaryName, resolvedVersion); err != nil {
-			return fmt.Errorf("creating shim for %s: %w", binaryName, err)
-		}
-		if err := EnsureShimDir(projectDir); err != nil {
-			return fmt.Errorf("ensuring shim dir: %w", err)
-		}
+	// Skip if already installed
+	if store.IsInstalled(binaryName, resolvedVersion) {
+		fmt.Printf("  %s %s already installed in .aide/store/, skipping\n", binaryName, resolvedVersion)
 		return nil
 	}
 
-	return installFromGithub(ownerRepo, assetPattern, binaryName, "", nil)
-}
+	if err := installFromGithub(ownerRepo, assetPattern, binaryName, destDir, resolvedRelease); err != nil {
+		return err
+	}
 
-// resolveVersion extracts the version constraint from the tool's recipe and
-// resolves it to a concrete version. Returns empty string if no version info.
-func resolveVersion(toolName string, recipes map[string]Recipe) string {
-	return ""
+	// Create shim
+	if err := CreateShim(projectDir, binaryName, resolvedVersion); err != nil {
+		return fmt.Errorf("creating shim for %s: %w", binaryName, err)
+	}
+	if err := EnsureShimDir(projectDir); err != nil {
+		return fmt.Errorf("ensuring shim dir: %w", err)
+	}
+	return nil
 }

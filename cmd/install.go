@@ -93,10 +93,9 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	for i, tr := range toolResults {
 		if !tr.Ok {
 			tool := cfg.Tools[i]
-			opts := installer.InstallOptions{}
+			opts := installer.InstallOptions{Version: tool.Version}
 			if cfg.IsIsolated() {
 				opts.ProjectDir = projectDir
-				opts.Version = tool.Version
 			}
 			if err := inst.InstallWithOptions(tool.Name, opts); err != nil {
 				fmt.Fprintf(os.Stderr, "Failed to install %s: %v\n", tool.Name, err)
