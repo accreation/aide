@@ -27,10 +27,10 @@ SHA_LINUX_AMD64=$(parse_checksum "aide-linux-amd64.tar.gz")
 SHA_LINUX_ARM64=$(parse_checksum "aide-linux-arm64.tar.gz")
 SHA_WINDOWS_AMD64=$(parse_checksum "aide-windows-amd64.exe.zip")
 SHA_WINDOWS_ARM64=$(parse_checksum "aide-windows-arm64.exe.zip")
-SHA_DEB_AMD64=$(parse_checksum "aide_${VERSION}_amd64.deb")
-SHA_DEB_ARM64=$(parse_checksum "aide_${VERSION}_arm64.deb")
-SHA_RPM_AMD64=$(parse_checksum "aide-${VERSION}-1.amd64.rpm")
-SHA_RPM_ARM64=$(parse_checksum "aide-${VERSION}-1.arm64.rpm")
+SHA_DEB_AMD64=$(parse_checksum "aide-cli_${VERSION}_amd64.deb")
+SHA_DEB_ARM64=$(parse_checksum "aide-cli_${VERSION}_arm64.deb")
+SHA_RPM_AMD64=$(parse_checksum "aide-cli-${VERSION}-1.amd64.rpm")
+SHA_RPM_ARM64=$(parse_checksum "aide-cli-${VERSION}-1.arm64.rpm")
 
 export VERSION SHA_DARWIN_AMD64 SHA_DARWIN_ARM64 SHA_LINUX_AMD64 SHA_LINUX_ARM64
 export SHA_WINDOWS_AMD64 SHA_WINDOWS_ARM64 SHA_DEB_AMD64 SHA_DEB_ARM64 SHA_RPM_AMD64 SHA_RPM_ARM64
