@@ -25,7 +25,7 @@ func (l *Launcher) Launch(name string, args ...string) error {
 // If env is set, it is used as the child process environment.
 // If env is nil, the current process environment is used as base.
 func (l *Launcher) LaunchWithEnv(name string, env []string, args ...string) error {
-	path, err := exec.LookPath(name)
+	path, err := lookPathInEnv(name, env)
 	if err != nil {
 		return fmt.Errorf("provider %q not found in PATH", name)
 	}
@@ -47,6 +47,35 @@ func (l *Launcher) LaunchWithEnv(name string, env []string, args ...string) erro
 	}
 
 	return cmd.Run()
+}
+
+// lookPathInEnv resolves name against the PATH found in env, rather than the
+// ambient process environment. If env is nil, it falls back to exec.LookPath's
+// normal ambient-PATH resolution.
+func lookPathInEnv(name string, env []string) (string, error) {
+	if env == nil {
+		return exec.LookPath(name)
+	}
+
+	pathValue := ""
+	for _, e := range env {
+		if strings.HasPrefix(strings.ToUpper(e), "PATH=") {
+			pathValue = e[len("PATH="):]
+			break
+		}
+	}
+
+	origPath, hadPath := os.LookupEnv("PATH")
+	os.Setenv("PATH", pathValue)
+	defer func() {
+		if hadPath {
+			os.Setenv("PATH", origPath)
+		} else {
+			os.Unsetenv("PATH")
+		}
+	}()
+
+	return exec.LookPath(name)
 }
 
 // IsolatedEnv returns the environment for an isolated launch: prepends .aide/shims to PATH.
