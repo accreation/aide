@@ -124,14 +124,18 @@ func (i *Installer) installWithGuardAndVersion(toolName, projectDir, version str
 func (i *Installer) installGithub(ownerRepo, assetPattern, binaryName, projectDir, version string) error {
 	destDir := ""
 	if projectDir != "" {
-		// Resolve version: if constraint given, find concrete version via GitHub API
+		// Resolve version: if constraint given, find a concrete release matching it
+		// via GitHub API. The same release is reused for the download below so the
+		// resolved version and the downloaded bits can never diverge.
 		resolvedVersion := "latest"
+		var resolvedRelease *githubRelease
 		if version != "" {
-			tag, err := fetchLatestReleaseMatching(ownerRepo, version)
+			release, err := fetchLatestReleaseMatching(ownerRepo, version)
 			if err != nil {
 				return fmt.Errorf("resolving version for %s with constraint %s: %w", binaryName, version, err)
 			}
-			resolvedVersion = strings.TrimPrefix(tag, "v")
+			resolvedRelease = release
+			resolvedVersion = strings.TrimPrefix(release.TagName, "v")
 		}
 		store := NewStore(projectDir)
 		destDir = store.BinDir(binaryName, resolvedVersion)
@@ -142,7 +146,7 @@ func (i *Installer) installGithub(ownerRepo, assetPattern, binaryName, projectDi
 			return nil
 		}
 
-		if err := installFromGithub(ownerRepo, assetPattern, binaryName, destDir); err != nil {
+		if err := installFromGithub(ownerRepo, assetPattern, binaryName, destDir, resolvedRelease); err != nil {
 			return err
 		}
 
@@ -156,7 +160,7 @@ func (i *Installer) installGithub(ownerRepo, assetPattern, binaryName, projectDi
 		return nil
 	}
 
-	return installFromGithub(ownerRepo, assetPattern, binaryName, "")
+	return installFromGithub(ownerRepo, assetPattern, binaryName, "", nil)
 }
 
 // resolveVersion extracts the version constraint from the tool's recipe and

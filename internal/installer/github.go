@@ -17,8 +17,10 @@ import (
 )
 
 type githubRelease struct {
-	TagName string        `json:"tag_name"`
-	Assets  []githubAsset `json:"assets"`
+	TagName    string        `json:"tag_name"`
+	Draft      bool          `json:"draft"`
+	Prerelease bool          `json:"prerelease"`
+	Assets     []githubAsset `json:"assets"`
 }
 
 type githubAsset struct {
@@ -61,20 +63,26 @@ var githubAPIBaseURL = "https://api.github.com"
 
 // installFromGithub downloads a binary from GitHub Releases, extracts if needed,
 // and places it in destDir. If destDir is empty, defaults to ~/.local/bin (global mode).
-func installFromGithub(ownerRepo, assetPattern, binaryName, destDir string) error {
-	parts := strings.SplitN(ownerRepo, "/", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid owner/repo: %q", ownerRepo)
-	}
-	owner, repo := parts[0], parts[1]
-
-	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", githubAPIBaseURL, owner, repo)
-
+// If release is nil, the latest release is fetched; otherwise the given release
+// (typically resolved beforehand by fetchLatestReleaseMatching) is used as-is, so
+// the same release is both version-checked and downloaded.
+func installFromGithub(ownerRepo, assetPattern, binaryName, destDir string, release *githubRelease) error {
 	client := &http.Client{Timeout: 30 * time.Second}
 
-	release, err := fetchLatestRelease(apiURL, client)
-	if err != nil {
-		return fmt.Errorf("fetching release for %s: %w", ownerRepo, err)
+	if release == nil {
+		parts := strings.SplitN(ownerRepo, "/", 2)
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid owner/repo: %q", ownerRepo)
+		}
+		owner, repo := parts[0], parts[1]
+
+		apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", githubAPIBaseURL, owner, repo)
+
+		r, err := fetchLatestRelease(apiURL, client)
+		if err != nil {
+			return fmt.Errorf("fetching release for %s: %w", ownerRepo, err)
+		}
+		release = r
 	}
 
 	asset, ok := matchAsset(release.Assets, assetPattern)
@@ -257,35 +265,76 @@ func extractTarGz(src, destDir, binaryName string) error {
 	return fmt.Errorf("binary %q not found in tar.gz archive", binaryName)
 }
 
-// fetchLatestReleaseMatching fetches the latest GitHub release whose tag satisfies
-// the given semver constraint. Returns the tag name, or an error if no matching
-// release found.
-func fetchLatestReleaseMatching(ownerRepo, constraint string) (string, error) {
+// releasesPerPage is the page size used when paginating through release history.
+const releasesPerPage = 100
+
+// fetchReleases fetches all releases for ownerRepo, paginating through
+// GET /repos/{owner}/{repo}/releases (newest first, per the GitHub API's default order).
+func fetchReleases(ownerRepo string, client *http.Client) ([]githubRelease, error) {
 	parts := strings.SplitN(ownerRepo, "/", 2)
 	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid owner/repo: %q", ownerRepo)
+		return nil, fmt.Errorf("invalid owner/repo: %q", ownerRepo)
 	}
 	owner, repo := parts[0], parts[1]
 
-	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", githubAPIBaseURL, owner, repo)
+	var all []githubRelease
+	for page := 1; ; page++ {
+		apiURL := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=%d&page=%d", githubAPIBaseURL, owner, repo, releasesPerPage, page)
 
+		resp, err := client.Get(apiURL)
+		if err != nil {
+			return nil, fmt.Errorf("fetching releases: %w", err)
+		}
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return nil, fmt.Errorf("GitHub API returned %d", resp.StatusCode)
+		}
+
+		var pageReleases []githubRelease
+		err = json.NewDecoder(resp.Body).Decode(&pageReleases)
+		resp.Body.Close()
+		if err != nil {
+			return nil, fmt.Errorf("parsing releases JSON: %w", err)
+		}
+
+		all = append(all, pageReleases...)
+		if len(pageReleases) < releasesPerPage {
+			break
+		}
+	}
+	return all, nil
+}
+
+// fetchLatestReleaseMatching walks release history (newest first) to find the
+// newest release whose tag satisfies the given semver constraint, skipping
+// drafts, prereleases, and tags that aren't valid semver. Returns an error if
+// no matching release is found in the entire release history.
+func fetchLatestReleaseMatching(ownerRepo, constraint string) (*githubRelease, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
-	release, err := fetchLatestRelease(apiURL, client)
+
+	releases, err := fetchReleases(ownerRepo, client)
 	if err != nil {
-		return "", fmt.Errorf("fetching release for %s: %w", ownerRepo, err)
+		return nil, fmt.Errorf("fetching releases for %s: %w", ownerRepo, err)
 	}
 
-	// Strip leading "v" if present
-	tag := strings.TrimPrefix(release.TagName, "v")
+	for i := range releases {
+		release := &releases[i]
+		if release.Draft || release.Prerelease {
+			continue
+		}
 
-	ok, err := semver.CheckConstraint(tag, constraint)
-	if err != nil {
-		return "", fmt.Errorf("checking constraint %s against version %s: %w", constraint, tag, err)
+		tag := strings.TrimPrefix(release.TagName, "v")
+		ok, err := semver.CheckConstraint(tag, constraint)
+		if err != nil {
+			// Tag isn't valid semver (e.g. "nightly") — skip rather than abort the search.
+			continue
+		}
+		if ok {
+			return release, nil
+		}
 	}
-	if !ok {
-		return "", fmt.Errorf("latest release %s does not satisfy constraint %s", release.TagName, constraint)
-	}
-	return release.TagName, nil
+
+	return nil, fmt.Errorf("no release found satisfying constraint %s", constraint)
 }
 
 // copyFile copies a file from src to dest.
