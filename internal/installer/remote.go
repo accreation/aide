@@ -1,6 +1,8 @@
 package installer
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,6 +26,13 @@ func cacheDir() (string, error) {
 	return filepath.Join(home, ".aide"), nil
 }
 
+// cacheFileForURL returns a cache path unique to url, so different
+// --recipes-url/AIDE_RECIPES_URL values don't collide on the same file.
+func cacheFileForURL(dir, url string) string {
+	sum := sha256.Sum256([]byte(url))
+	return filepath.Join(dir, "cache", hex.EncodeToString(sum[:])+".yaml")
+}
+
 // FetchRemoteRecipes downloads recipes from url, caches them locally,
 // and returns the file path to the cached copy. If the cache is fresh
 // (less than cacheTTL old), it returns the cached path without network access.
@@ -39,11 +48,11 @@ func FetchRemoteRecipes(url string) (string, error) {
 		return "", nil // non-fatal
 	}
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	cacheFile := cacheFileForURL(dir, url)
+
+	if err := os.MkdirAll(filepath.Dir(cacheFile), 0o755); err != nil {
 		return "", nil
 	}
-
-	cacheFile := filepath.Join(dir, "recipes.yaml")
 
 	// Check if cache is fresh
 	if info, err := os.Stat(cacheFile); err == nil {
@@ -66,7 +75,7 @@ func FetchRemoteRecipes(url string) (string, error) {
 	if err := os.WriteFile(cacheFile, data, 0o644); err != nil {
 		// Couldn't cache — that's fine, we still have the data
 		// Write to a temp file so LoadRecipes can use it
-		tmpFile := filepath.Join(dir, "recipes.tmp.yaml")
+		tmpFile := cacheFile + ".tmp"
 		if err := os.WriteFile(tmpFile, data, 0o644); err != nil {
 			return "", nil
 		}
@@ -98,13 +107,16 @@ func download(url string) ([]byte, error) {
 	return data, nil
 }
 
-// ClearRecipeCache removes the cached recipes file, forcing a fresh download next time.
+// ClearRecipeCache removes all cached recipes files, forcing a fresh download next time.
 func ClearRecipeCache() error {
 	dir, err := cacheDir()
 	if err != nil {
 		return err
 	}
-	cacheFile := filepath.Join(dir, "recipes.yaml")
-	_ = os.Remove(cacheFile)
+	if err := os.RemoveAll(filepath.Join(dir, "cache")); err != nil {
+		return err
+	}
+	// Remove the pre-fix fixed-path cache file, if present.
+	_ = os.Remove(filepath.Join(dir, "recipes.yaml"))
 	return nil
 }
