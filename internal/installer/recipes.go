@@ -125,9 +125,23 @@ func ResolvePM(tool string, recipes map[string]Recipe) (string, []string, error)
 
 // pmAvailable checks if a package manager is available in PATH.
 func pmAvailable(pm string) bool {
-	// curl and bash are special — check as regular commands
 	_, err := exec.LookPath(pm)
 	return err == nil
+}
+
+// isRoot returns true if the process is running as root (uid 0).
+func isRoot() bool {
+	return os.Geteuid() == 0
+}
+
+// needsRoot returns true if the package manager requires root/admin privileges.
+func needsRoot(pm string) bool {
+	switch pm {
+	case "apt", "dnf":
+		return true
+	default:
+		return false
+	}
 }
 
 // buildInstallArgs builds the command-line arguments for a package manager.
@@ -147,6 +161,8 @@ func buildInstallArgs(pm, pkg string) []string {
 		return []string{"install", "-y", pkg}
 	case "curl":
 		return []string{"-fsSL", pkg} // pipe to bash handled by shell wrapper
+	case "npm":
+		return []string{"install", "-g", pkg}
 	case "github":
 		parts := strings.Fields(pkg)
 		if len(parts) != 3 {

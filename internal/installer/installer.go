@@ -100,6 +100,11 @@ func (i *Installer) installWithGuardAndVersion(toolName, projectDir, version str
 			return fmt.Errorf("invalid github recipe for %s: expected 'owner/repo asset binary'", toolName)
 		}
 		return i.installGithub(args[0], args[1], args[2], projectDir, version)
+	} else if needsRoot(pm) && !isRoot() {
+		// System PMs like apt/dnf need sudo when not running as root
+		sudoArgs := append([]string{pm}, args...)
+		cmd = exec.Command("sudo", sudoArgs...)
+		fmt.Printf("  (using sudo for %s)\n", pm)
 	} else {
 		cmd = exec.Command(pm, args...)
 	}
