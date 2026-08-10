@@ -1,8 +1,10 @@
 package project
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -118,5 +120,32 @@ func TestListEmpty(t *testing.T) {
 	}
 	if len(all) != 0 {
 		t.Errorf("expected 0 projects, got %d", len(all))
+	}
+}
+
+func TestConcurrentRegisterDoesNotLoseUpdates(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	const n = 20
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			name := fmt.Sprintf("proj-%d", i)
+			if err := Register(name, fmt.Sprintf("/path/%d", i)); err != nil {
+				t.Errorf("Register(%s) failed: %v", name, err)
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	all, err := List()
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(all) != n {
+		t.Errorf("expected %d projects after concurrent registers, got %d (lost updates)", n, len(all))
 	}
 }

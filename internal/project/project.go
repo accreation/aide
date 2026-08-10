@@ -7,7 +7,14 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
+
+	"aide/internal/fsutil"
 )
+
+// lockTimeout bounds how long Register waits for a concurrent aide
+// process to finish its own read-modify-write of projects.json.
+const lockTimeout = 5 * time.Second
 
 func projectsPath() (string, error) {
 	home, err := os.UserHomeDir()
@@ -65,7 +72,7 @@ func writeProjects(projects map[string]string) error {
 		return fmt.Errorf("marshaling projects: %w", err)
 	}
 
-	if err := os.WriteFile(p, data, 0644); err != nil {
+	if err := fsutil.WriteFileAtomic(p, data, 0644); err != nil {
 		return fmt.Errorf("writing %s: %w", p, err)
 	}
 	return nil
@@ -73,6 +80,19 @@ func writeProjects(projects map[string]string) error {
 
 // Register adds or updates a project entry in the registry.
 func Register(name, path string) error {
+	if err := ensureDir(); err != nil {
+		return err
+	}
+	p, err := projectsPath()
+	if err != nil {
+		return err
+	}
+	unlock, err := fsutil.Lock(p, lockTimeout)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
 	projects, err := readProjects()
 	if err != nil {
 		return err
