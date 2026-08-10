@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"aide/internal/config"
+	"aide/internal/installer"
 	"aide/internal/semver"
 
 	"github.com/goccy/go-yaml"
@@ -60,10 +62,12 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
+	projectDir := filepath.Dir(cfgPath)
+
 	// Determine version
 	version := addVersion
 	if version == "" {
-		version = detectVersion(toolName)
+		version = detectVersion(cfg, projectDir, toolName)
 	}
 
 	// Check if tool already exists — update or append
@@ -109,7 +113,15 @@ func runAdd(cmd *cobra.Command, args []string) error {
 // detectVersion tries to detect the installed version of a tool
 // by running it with --version or version subcommand.
 // Returns version constraint (e.g. ">=1.2.3") or empty string if not found.
-func detectVersion(name string) string {
+func detectVersion(cfg *config.Config, projectDir, name string) string {
+	if cfg.IsIsolated() {
+		// Prepend .aide/shims to PATH so isolated-mode installs are found,
+		// matching checker.checkBinary's resolution order.
+		origPath := os.Getenv("PATH")
+		os.Setenv("PATH", installer.ShimDir(projectDir)+string(os.PathListSeparator)+origPath)
+		defer os.Setenv("PATH", origPath)
+	}
+
 	path, err := exec.LookPath(name)
 	if err != nil {
 		return ""
