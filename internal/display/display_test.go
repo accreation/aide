@@ -28,6 +28,30 @@ func TestPrintProviderResultFail(t *testing.T) {
 	}
 }
 
+func TestPrintProviderResultFoundVersionUndetermined(t *testing.T) {
+	var buf bytes.Buffer
+	PrintProviderResult(&buf, CheckResult{Name: "java", Ok: false, Found: true})
+	out := buf.String()
+	if !strings.Contains(out, "FAIL") || !strings.Contains(out, "java") {
+		t.Errorf("expected FAIL / java, got: %s", out)
+	}
+	if strings.Contains(out, "not found") {
+		t.Errorf("binary was found on PATH, message should not say 'not found', got: %s", out)
+	}
+}
+
+func TestPrintToolResultsFoundVersionUndetermined(t *testing.T) {
+	var buf bytes.Buffer
+	results := []CheckResult{
+		{Name: "java", Required: ">=11.0.0", Ok: false, Found: true},
+	}
+	PrintToolResults(&buf, results)
+	out := buf.String()
+	if !strings.Contains(out, "java") || strings.Contains(out, "not found") {
+		t.Errorf("expected java found-but-undetermined message, not 'not found', got: %s", out)
+	}
+}
+
 func TestPrintToolResults(t *testing.T) {
 	var buf bytes.Buffer
 	results := []CheckResult{

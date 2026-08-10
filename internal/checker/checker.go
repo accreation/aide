@@ -54,6 +54,7 @@ func (c *Checker) checkBinary(name, constraint string) display.CheckResult {
 		return result
 	}
 	_ = binPath
+	result.Found = true
 
 	// If no version constraint, just existence is enough
 	if constraint == "" {
@@ -61,17 +62,18 @@ func (c *Checker) checkBinary(name, constraint string) display.CheckResult {
 		return result
 	}
 
-	// Try to get version
+	// Try to get version. Use CombinedOutput since some tools (e.g. `java
+	// -version`) write their version string to stderr on a zero exit code.
 	cmd := exec.Command(name, "--version")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		// --version failed, try -v
 		cmd = exec.Command(name, "-v")
-		out, err = cmd.Output()
+		out, err = cmd.CombinedOutput()
 		if err != nil {
 			// -v failed, try the "version" subcommand (e.g., "go version")
 			cmd = exec.Command(name, "version")
-			out, err = cmd.Output()
+			out, err = cmd.CombinedOutput()
 			if err != nil {
 				return result // can't determine version, treat as not ok
 			}
