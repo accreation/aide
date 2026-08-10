@@ -1,8 +1,10 @@
 package account
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -88,5 +90,60 @@ func TestAddAPIKeyIsMaskedInFile(t *testing.T) {
 	// API key should NOT appear in plain text in the JSON file
 	if string(data) == "" {
 		t.Fatal("accounts.json should exist")
+	}
+}
+
+func TestAccountsFilePermissionsReenforcedOnWrite(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	if err := Add("a", Account{Provider: "claude", APIKey: "sk-a"}); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+
+	p := filepath.Join(tmp, ".aide", "accounts.json")
+	if err := os.Chmod(p, 0644); err != nil {
+		t.Fatalf("chmod failed: %v", err)
+	}
+
+	if err := Add("b", Account{Provider: "claude", APIKey: "sk-b"}); err != nil {
+		t.Fatalf("second Add failed: %v", err)
+	}
+
+	info, err := os.Stat(p)
+	if err != nil {
+		t.Fatalf("stat failed: %v", err)
+	}
+	if info.Mode().Perm() != 0600 {
+		t.Errorf("expected accounts.json to be re-tightened to 0600, got %o", info.Mode().Perm())
+	}
+}
+
+func TestConcurrentAddDoesNotLoseUpdates(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	const n = 20
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			name := fmt.Sprintf("acct-%d", i)
+			if err := Add(name, Account{Provider: "claude", APIKey: fmt.Sprintf("sk-%d", i)}); err != nil {
+				t.Errorf("Add(%s) failed: %v", name, err)
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	accounts, err := List()
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(accounts) != n {
+		t.Errorf("expected %d accounts after concurrent adds, got %d (lost updates)", n, len(accounts))
 	}
 }
