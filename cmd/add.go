@@ -65,8 +65,9 @@ func runAdd(cmd *cobra.Command, args []string) error {
 	projectDir := filepath.Dir(cfgPath)
 
 	// Determine version
+	versionExplicit := cmd.Flags().Changed("version")
 	version := addVersion
-	if version == "" {
+	if version == "" && !versionExplicit {
 		version = detectVersion(cfg, projectDir, toolName)
 	}
 
@@ -76,6 +77,10 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		if t.Name == toolName {
 			if t.Version == version {
 				fmt.Printf("Tool %q is already in aide.yaml with the same version (%s)\n", toolName, version)
+				return nil
+			}
+			if version == "" && !versionExplicit && t.Version != "" {
+				fmt.Printf("Warning: could not detect an installed version for %q; keeping existing constraint %q (pass --version \"\" to clear it)\n", toolName, t.Version)
 				return nil
 			}
 			cfg.Tools[i].Version = version
