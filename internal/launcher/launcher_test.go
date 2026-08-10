@@ -1,6 +1,9 @@
 package launcher
 
 import (
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -26,6 +29,46 @@ func TestLaunchWithAccountMissing(t *testing.T) {
 	err := l.Launch("go", "version")
 	if err == nil {
 		t.Fatal("expected error for missing account")
+	}
+}
+
+// TestLaunchWithEnvUsesIsolatedPath reproduces the isolated-mode launch bug:
+// a tool that exists only in a shim-style directory (not on the ambient PATH)
+// must still be found when LaunchWithEnv is given an env whose PATH includes it.
+func TestLaunchWithEnvUsesIsolatedPath(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shim script creation below is unix-specific")
+	}
+
+	shimDir := t.TempDir()
+	shimPath := filepath.Join(shimDir, "isolated-only-tool")
+	if err := os.WriteFile(shimPath, []byte("#!/bin/sh\nexit 0\n"), 0o755); err != nil {
+		t.Fatalf("writing fake shim: %v", err)
+	}
+
+	// Ambient PATH deliberately excludes shimDir, mirroring the real bug where
+	// exec.LookPath resolved against os.Getenv("PATH") instead of the isolated env.
+	origPath, hadPath := os.LookupEnv("PATH")
+	os.Setenv("PATH", "/nonexistent-ambient-path")
+	defer func() {
+		if hadPath {
+			os.Setenv("PATH", origPath)
+		} else {
+			os.Unsetenv("PATH")
+		}
+	}()
+
+	var env []string
+	for _, e := range os.Environ() {
+		if !strings.HasPrefix(strings.ToUpper(e), "PATH=") {
+			env = append(env, e)
+		}
+	}
+	env = append(env, "PATH="+shimDir)
+
+	l := &Launcher{}
+	if err := l.LaunchWithEnv("isolated-only-tool", env); err != nil {
+		t.Fatalf("expected tool found via isolated env PATH, got: %v", err)
 	}
 }
 
