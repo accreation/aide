@@ -14,6 +14,38 @@
 # Template variables: ${GOARCH}, ${GOOS}, ${OS}, ${ARCH} (from arch_map)
 
 
+claude:
+  windows:
+    - npm: "@anthropic-ai/claude-code"
+  macos:
+    - npm: "@anthropic-ai/claude-code"
+  linux:
+    - npm: "@anthropic-ai/claude-code"
+
+codex:
+  windows:
+    - npm: "@openai/codex"
+  macos:
+    - npm: "@openai/codex"
+  linux:
+    - npm: "@openai/codex"
+
+copilot:
+  windows:
+    - npm: "@github/copilot"
+  macos:
+    - npm: "@github/copilot"
+  linux:
+    - npm: "@github/copilot"
+
+opencode:
+  windows:
+    - npm: "@opencode-ai/cli"
+  macos:
+    - npm: "@opencode-ai/cli"
+  linux:
+    - npm: "@opencode-ai/cli"
+
 age:
   windows:
     - scoop: age
