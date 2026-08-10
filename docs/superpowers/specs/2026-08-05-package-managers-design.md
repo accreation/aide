@@ -249,7 +249,7 @@ APT::FTPArchive::Release::Description "Aide — AI environment manager";
 ```bash
 curl -fsSL https://accreation.github.io/aide-repo/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/aide.gpg
 echo "deb https://accreation.github.io/aide-repo stable main" | sudo tee /etc/apt/sources.list.d/aide.list
-sudo apt update && sudo apt install aide
+sudo apt update && sudo apt install aide-cli
 ```
 
 ### 6. DNF Repository
@@ -296,7 +296,7 @@ gpgkey=https://accreation.github.io/aide-repo/gpg.key
 **Пользовательская установка**:
 ```bash
 sudo dnf config-manager --add-repo https://accreation.github.io/aide-repo/aide.repo
-sudo dnf install aide
+sudo dnf install aide-cli
 ```
 
 ## CI Pipeline Changes (`release.yml`)
@@ -396,6 +396,6 @@ packaging/
 
 - **Скрипты публикации**: ручное тестирование на первом релизе после внедрения
 - **Шаблоны**: unit-тесты на рендеринг (сравнение с эталонным выводом)
-- **APT/DNF**: проверить `apt update && apt install aide` и `dnf install aide` после публикации
+- **APT/DNF**: проверить `apt update && apt install aide-cli` и `dnf install aide-cli` после публикации
 - **Homebrew**: `brew install accreation/tap/aide` после публикации
 - **Scoop**: `scoop bucket add accreation https://github.com/accreation/scoop-bucket && scoop install aide`

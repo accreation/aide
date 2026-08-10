@@ -78,15 +78,17 @@ brew install accreation/tap/aide
 
 #### Linux
 
+> ⚠️ **Name conflict:** Ubuntu/Debian have a system package called `aide` (Advanced Intrusion Detection Environment). Make sure to install **`aide-cli`** (not `aide`) to get this tool. The command you run after installation is still `aide`.
+
 ```bash
 # APT (Debian / Ubuntu)
 curl -fsSL https://accreation.github.io/aide-repo/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/aide.gpg
 echo "deb https://accreation.github.io/aide-repo stable main" | sudo tee /etc/apt/sources.list.d/aide.list
-sudo apt update && sudo apt install aide
+sudo apt update && sudo apt install aide-cli
 
 # DNF (Fedora / RHEL)
 sudo dnf config-manager --add-repo https://accreation.github.io/aide-repo/aide.repo
-sudo dnf install aide
+sudo dnf install aide-cli
 
 # Portable binary (any distro)
 curl -fsSL https://github.com/accreation/aide/releases/latest/download/aide-linux-amd64.tar.gz | tar -xz

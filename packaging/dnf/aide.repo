@@ -1,6 +1,6 @@
-[aide]
-name=Aide — AI environment manager
-baseurl=https://accreation.github.io/aide-repo/aide
+[aide-cli]
+name=Aide CLI — AI environment manager
+baseurl=https://accreation.github.io/aide-repo/aide-cli
 enabled=1
 gpgcheck=0
 repo_gpgcheck=1

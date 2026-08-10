@@ -13,168 +13,45 @@
 #
 # Template variables: ${GOARCH}, ${GOOS}, ${OS}, ${ARCH} (from arch_map)
 
-gh:
-  windows:
-    - winget: GitHub.cli
-    - scoop: gh
-    - choco: gh
-  macos:
-    - brew: gh
-  linux:
-    - apt: gh
-    - dnf: gh
 
-glab:
+age:
   windows:
-    - winget: GitLab.GitLab
+    - scoop: age
+    - choco: age
   macos:
-    - brew: glab
+    - brew: age
   linux:
-    - apt: glab
-    - dnf: glab
+    - apt: age
+    - dnf: age
 
-az:
+ansible:
   windows:
-    - winget: Microsoft.AzureCLI
+    - winget: RedHat.Ansible
+    - scoop: ansible
+    - choco: ansible
   macos:
-    - brew: azure-cli
+    - brew: ansible
   linux:
-    - curl: "https://aka.ms/InstallAzureCLIDeb | bash"
+    - apt: ansible
+    - dnf: ansible
 
-rtk:
-  arch_map:
-    amd64: x86_64
-    arm64: aarch64
+argocd:
   windows:
-    - github: "rtk-ai/rtk rtk-${ARCH}-pc-windows-msvc.zip rtk.exe"
+    - winget: argoproj.argocd
+    - scoop: argocd
   macos:
-    - brew: rtk
+    - brew: argocd
   linux:
-    - curl: "https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh"
+    - curl: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.sh | bash"
 
-git:
+atuin:
   windows:
-    - winget: Git.Git
+    - scoop: atuin
   macos:
-    - brew: git
+    - brew: atuin
   linux:
-    - apt: git
-    - dnf: git
-
-docker:
-  windows:
-    - winget: Docker.DockerDesktop
-    - scoop: docker
-    - choco: docker-desktop
-  macos:
-    - brew: docker
-  linux:
-    - apt: docker.io
-    - dnf: docker
-
-python:
-  windows:
-    - winget: Python.Python.3.12
-    - scoop: python
-    - choco: python
-  macos:
-    - brew: python
-  linux:
-    - apt: python3
-    - dnf: python3
-
-nodejs:
-  windows:
-    - winget: OpenJS.NodeJS.LTS
-    - scoop: nodejs
-    - choco: nodejs
-  macos:
-    - brew: node
-  linux:
-    - apt: nodejs
-    - dnf: nodejs
-
-bun:
-  windows:
-    - winget: Oven-sh.Bun
-    - scoop: bun
-  macos:
-    - brew: oven-sh/bun/bun
-  linux:
-    - curl: "https://bun.sh/install | bash"
-
-deno:
-  windows:
-    - winget: DenoLand.Deno
-    - scoop: deno
-    - choco: deno
-  macos:
-    - brew: deno
-  linux:
-    - curl: "https://deno.land/install.sh | sh"
-
-go:
-  windows:
-    - winget: GoLang.Go
-    - scoop: go
-    - choco: golang
-  macos:
-    - brew: go
-  linux:
-    - apt: golang-go
-    - dnf: golang
-
-rustup:
-  windows:
-    - winget: Rustlang.Rustup
-    - scoop: rustup
-  macos:
-    - curl: "https://sh.rustup.rs | sh -s -- -y"
-  linux:
-    - curl: "https://sh.rustup.rs | sh -s -- -y"
-
-java:
-  windows:
-    - winget: EclipseAdoptium.Temurin.21.JDK
-    - scoop: temurin21-jdk
-    - choco: temurin
-  macos:
-    - brew: openjdk
-  linux:
-    - apt: default-jdk
-    - dnf: java-21-openjdk
-
-dotnet:
-  windows:
-    - winget: Microsoft.DotNet.SDK.9
-    - scoop: dotnet-sdk
-    - choco: dotnet-sdk
-  macos:
-    - brew: dotnet-sdk
-  linux:
-    - curl: "https://dot.net/v1/dotnet-install.sh | bash"
-
-kubectl:
-  windows:
-    - winget: Kubernetes.kubectl
-    - scoop: kubectl
-    - choco: kubernetes-cli
-  macos:
-    - brew: kubectl
-  linux:
-    - apt: kubectl
-    - dnf: kubectl
-
-terraform:
-  windows:
-    - winget: Hashicorp.Terraform
-    - scoop: terraform
-    - choco: terraform
-  macos:
-    - brew: terraform
-  linux:
-    - apt: terraform
-    - dnf: terraform
+    - apt: atuin
+    - dnf: atuin
 
 aws:
   windows:
@@ -189,68 +66,175 @@ aws:
     amd64: x86_64
     arm64: aarch64
 
-gcloud:
+az:
   windows:
-    - winget: Google.GoogleCloudSDK
-    - scoop: gcloud
+    - winget: Microsoft.AzureCLI
   macos:
-    - brew: google-cloud-sdk
+    - brew: azure-cli
   linux:
-    - curl: "https://sdk.cloud.google.com | bash"
+    - curl: "https://aka.ms/InstallAzureCLIDeb | bash"
 
-pnpm:
+bat:
   windows:
-    - winget: pnpm.pnpm
-    - scoop: pnpm
-    - choco: pnpm
+    - winget: sharkdp.bat
+    - scoop: bat
+    - choco: bat
   macos:
-    - brew: pnpm
+    - brew: bat
   linux:
-    - curl: "https://get.pnpm.io/install.sh | sh -"
+    - apt: bat
+    - dnf: bat
 
-yarn:
+buildah:
   windows:
-    - winget: Yarn.Yarn
-    - scoop: yarn
-    - choco: yarn
+    - scoop: buildah
   macos:
-    - brew: yarn
+    - brew: buildah
   linux:
-    - apt: yarn
-    - dnf: yarn
+    - apt: buildah
+    - dnf: buildah
 
-helm:
+bun:
   windows:
-    - winget: Helm.Helm
-    - scoop: helm
-    - choco: kubernetes-helm
+    - winget: Oven-sh.Bun
+    - scoop: bun
   macos:
-    - brew: helm
+    - brew: oven-sh/bun/bun
   linux:
-    - apt: helm
-    - dnf: helm
+    - curl: "https://bun.sh/install | bash"
 
-jq:
-  windows:
-    - winget: jqlang.jq
-    - scoop: jq
-    - choco: jq
+clickhouse:
+  windows: []
   macos:
-    - brew: jq
+    - brew: clickhouse
   linux:
-    - apt: jq
-    - dnf: jq
+    - curl: "https://clickhouse.com/ | sh"
 
-rg:
+cmake:
   windows:
-    - winget: BurntSushi.ripgrep.MSVC
-    - scoop: ripgrep
-    - choco: ripgrep
+    - winget: Kitware.CMake
+    - scoop: cmake
+    - choco: cmake
   macos:
-    - brew: ripgrep
+    - brew: cmake
   linux:
-    - apt: ripgrep
-    - dnf: ripgrep
+    - apt: cmake
+    - dnf: cmake
+
+cosign:
+  windows:
+    - scoop: cosign
+    - choco: cosign
+  macos:
+    - brew: cosign
+  linux:
+    - apt: cosign
+    - dnf: cosign
+
+datadog:
+  windows:
+    - scoop: datadog-agent
+    - choco: datadog-agent
+  macos:
+    - brew: datadog-agent
+  linux:
+    - apt: datadog-agent
+    - dnf: datadog-agent
+
+deno:
+  windows:
+    - winget: DenoLand.Deno
+    - scoop: deno
+    - choco: deno
+  macos:
+    - brew: deno
+  linux:
+    - curl: "https://deno.land/install.sh | sh"
+
+docker:
+  windows:
+    - winget: Docker.DockerDesktop
+    - scoop: docker
+    - choco: docker-desktop
+  macos:
+    - brew: docker
+  linux:
+    - apt: docker.io
+    - dnf: docker
+
+doctl:
+  windows:
+    - winget: DigitalOcean.Doctl
+    - scoop: doctl
+  macos:
+    - brew: doctl
+  linux:
+    - apt: doctl
+    - dnf: doctl
+
+dotnet:
+  windows:
+    - winget: Microsoft.DotNet.SDK.9
+    - scoop: dotnet-sdk
+    - choco: dotnet-sdk
+  macos:
+    - brew: dotnet-sdk
+  linux:
+    - curl: "https://dot.net/v1/dotnet-install.sh | bash"
+
+duckdb:
+  windows:
+    - winget: DuckDB.DuckDB
+    - scoop: duckdb
+  macos:
+    - brew: duckdb
+  linux:
+    - apt: duckdb
+    - dnf: duckdb
+
+elixir:
+  windows:
+    - winget: Erlang.Erlang
+    - scoop: elixir
+    - choco: elixir
+  macos:
+    - brew: elixir
+  linux:
+    - apt: elixir
+    - dnf: elixir
+
+emacs:
+  windows:
+    - winget: GNU.Emacs
+    - scoop: emacs
+    - choco: emacs
+  macos:
+    - brew: emacs
+  linux:
+    - apt: emacs
+    - dnf: emacs
+
+erlang:
+  windows:
+    - winget: Erlang.Erlang
+    - scoop: erlang
+    - choco: erlang
+  macos:
+    - brew: erlang
+  linux:
+    - apt: erlang
+    - dnf: erlang
+
+eza:
+  windows:
+    - winget: eza-community.eza
+    - scoop: eza
+    - choco: eza
+  macos:
+    - brew: eza
+  linux:
+    - apt: eza
+    - dnf: eza
 
 fd:
   windows:
@@ -274,6 +258,88 @@ fzf:
     - apt: fzf
     - dnf: fzf
 
+gcloud:
+  windows:
+    - winget: Google.GoogleCloudSDK
+    - scoop: gcloud
+  macos:
+    - brew: google-cloud-sdk
+  linux:
+    - curl: "https://sdk.cloud.google.com | bash"
+
+gh:
+  windows:
+    - winget: GitHub.cli
+    - scoop: gh
+    - choco: gh
+  macos:
+    - brew: gh
+  linux:
+    - apt: gh
+    - dnf: gh
+
+git:
+  windows:
+    - winget: Git.Git
+  macos:
+    - brew: git
+  linux:
+    - apt: git
+    - dnf: git
+
+glab:
+  windows:
+    - winget: GitLab.GitLab
+  macos:
+    - brew: glab
+  linux:
+    - apt: glab
+    - dnf: glab
+
+go:
+  windows:
+    - winget: GoLang.Go
+    - scoop: go
+    - choco: golang
+  macos:
+    - brew: go
+  linux:
+    - apt: golang-go
+    - dnf: golang
+
+gpg:
+  windows:
+    - winget: GnuPG.GnuPG
+    - scoop: gnupg
+    - choco: gnupg
+  macos:
+    - brew: gnupg
+  linux:
+    - apt: gnupg
+    - dnf: gnupg2
+
+gradle:
+  windows:
+    - winget: Gradle.Gradle
+    - scoop: gradle
+    - choco: gradle
+  macos:
+    - brew: gradle
+  linux:
+    - apt: gradle
+    - dnf: gradle
+
+grafana:
+  windows:
+    - winget: Grafana.Grafana
+    - scoop: grafana
+    - choco: grafana
+  macos:
+    - brew: grafana
+  linux:
+    - apt: grafana
+    - dnf: grafana
+
 graphify:
   requires: [pipx]
   windows:
@@ -286,6 +352,284 @@ graphify:
     - pipx: graphifyy
     - pip: graphifyy
 
+groovy:
+  windows:
+    - winget: Apache.Groovy
+    - scoop: groovy
+    - choco: groovy
+  macos:
+    - brew: groovy
+  linux:
+    - apt: groovy
+    - dnf: groovy
+
+haskell:
+  windows:
+    - winget: Haskell.Haskell
+    - scoop: ghcup
+    - choco: ghc
+  macos:
+    - brew: ghc
+  linux:
+    - apt: ghc
+    - dnf: ghc
+
+helix:
+  windows:
+    - winget: Helix.Helix
+    - scoop: helix
+  macos:
+    - brew: helix
+  linux:
+    - apt: helix
+    - dnf: helix
+
+helm:
+  windows:
+    - winget: Helm.Helm
+    - scoop: helm
+    - choco: kubernetes-helm
+  macos:
+    - brew: helm
+  linux:
+    - apt: helm
+    - dnf: helm
+
+httpie:
+  windows:
+    - winget: HTTPie.HTTPie
+    - scoop: httpie
+    - choco: httpie
+  macos:
+    - brew: httpie
+  linux:
+    - apt: httpie
+    - dnf: httpie
+
+java:
+  windows:
+    - winget: EclipseAdoptium.Temurin.21.JDK
+    - scoop: temurin21-jdk
+    - choco: temurin
+  macos:
+    - brew: openjdk
+  linux:
+    - apt: default-jdk
+    - dnf: java-21-openjdk
+
+jq:
+  windows:
+    - winget: jqlang.jq
+    - scoop: jq
+    - choco: jq
+  macos:
+    - brew: jq
+  linux:
+    - apt: jq
+    - dnf: jq
+
+kotlin:
+  windows:
+    - winget: JetBrains.Kotlin
+    - scoop: kotlin
+    - choco: kotlin
+  macos:
+    - brew: kotlin
+  linux:
+    - apt: kotlin
+    - dnf: kotlin
+
+kubectl:
+  windows:
+    - winget: Kubernetes.kubectl
+    - scoop: kubectl
+    - choco: kubernetes-cli
+  macos:
+    - brew: kubectl
+  linux:
+    - apt: kubectl
+    - dnf: kubectl
+
+lua:
+  windows:
+    - winget: Lua.Lua
+    - scoop: lua
+    - choco: lua
+  macos:
+    - brew: lua
+  linux:
+    - apt: lua5.4
+    - dnf: lua
+
+make:
+  windows:
+    - winget: GnuWin32.Make
+    - scoop: make
+    - choco: make
+  macos:
+    - brew: make
+  linux:
+    - apt: make
+    - dnf: make
+
+maven:
+  windows:
+    - winget: Apache.Maven
+    - scoop: maven
+    - choco: maven
+  macos:
+    - brew: maven
+  linux:
+    - apt: maven
+    - dnf: maven
+
+micro:
+  windows:
+    - winget: zyedidia.micro
+    - scoop: micro
+    - choco: micro
+  macos:
+    - brew: micro
+  linux:
+    - apt: micro
+    - dnf: micro
+
+mongosh:
+  windows:
+    - winget: MongoDB.MongoDBShell
+    - scoop: mongosh
+  macos:
+    - brew: mongosh
+  linux:
+    - apt: mongosh
+    - dnf: mongosh
+
+mysql:
+  windows:
+    - winget: Oracle.MySQL
+    - scoop: mysql
+    - choco: mysql
+  macos:
+    - brew: mysql-client
+  linux:
+    - apt: mysql-client
+    - dnf: mysql
+
+neovim:
+  windows:
+    - winget: Neovim.Neovim
+    - scoop: neovim
+    - choco: neovim
+  macos:
+    - brew: neovim
+  linux:
+    - apt: neovim
+    - dnf: neovim
+
+netcat:
+  windows:
+    - scoop: netcat
+    - choco: netcat
+  macos:
+    - brew: netcat
+  linux:
+    - apt: netcat-openbsd
+    - dnf: nmap-ncat
+
+newrelic:
+  windows:
+    - winget: NewRelic.NewRelicCLI
+    - scoop: newrelic-cli
+  macos:
+    - brew: newrelic-cli
+  linux:
+    - apt: newrelic-cli
+    - dnf: newrelic-cli
+
+ngrok:
+  windows:
+    - winget: ngrok.ngrok
+    - scoop: ngrok
+    - choco: ngrok
+  macos:
+    - brew: ngrok
+  linux:
+    - apt: ngrok
+    - dnf: ngrok
+
+ninja:
+  windows:
+    - winget: Ninja-build.Ninja
+    - scoop: ninja
+    - choco: ninja
+  macos:
+    - brew: ninja
+  linux:
+    - apt: ninja-build
+    - dnf: ninja-build
+
+nodejs:
+  windows:
+    - winget: OpenJS.NodeJS.LTS
+    - scoop: nodejs
+    - choco: nodejs
+  macos:
+    - brew: node
+  linux:
+    - apt: nodejs
+    - dnf: nodejs
+
+openssl:
+  windows:
+    - winget: ShiningLight.OpenSSL
+    - scoop: openssl
+    - choco: openssl
+  macos:
+    - brew: openssl
+  linux:
+    - apt: openssl
+    - dnf: openssl
+
+opentelemetry-collector:
+  windows:
+    - scoop: otelcol-contrib
+  macos:
+    - brew: opentelemetry-collector-contrib
+  linux:
+    - curl: "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/latest/download/otelcol-contrib_linux_amd64.tar.gz | tar xz -C /usr/local/bin"
+
+pack:
+  windows:
+    - scoop: pack
+    - choco: pack
+  macos:
+    - brew: buildpacks/tap/pack
+  linux:
+    - apt: pack-cli
+    - dnf: pack-cli
+
+perl:
+  windows:
+    - winget: StrawberryPerl.StrawberryPerl
+    - scoop: perl
+    - choco: strawberryperl
+  macos:
+    - brew: perl
+  linux:
+    - apt: perl
+    - dnf: perl
+
+php:
+  windows:
+    - winget: PHP.PHP
+    - scoop: php
+    - choco: php
+  macos:
+    - brew: php
+  linux:
+    - apt: php-cli
+    - dnf: php-cli
+
 pipx:
   windows:
     - scoop: pipx
@@ -296,3 +640,286 @@ pipx:
     - apt: pipx
     - dnf: pipx
     - pip: pipx
+
+
+pnpm:
+  windows:
+    - winget: pnpm.pnpm
+    - scoop: pnpm
+    - choco: pnpm
+  macos:
+    - brew: pnpm
+  linux:
+    - curl: "https://get.pnpm.io/install.sh | sh -"
+
+podman:
+  windows:
+    - winget: RedHat.Podman
+    - scoop: podman
+    - choco: podman
+  macos:
+    - brew: podman
+  linux:
+    - apt: podman
+    - dnf: podman
+
+postgresql:
+  windows:
+    - winget: PostgreSQL.PostgreSQL
+    - scoop: postgresql
+    - choco: postgresql
+  macos:
+    - brew: libpq
+  linux:
+    - apt: postgresql-client
+    - dnf: postgresql
+
+prometheus:
+  windows:
+    - scoop: prometheus
+    - choco: prometheus
+  macos:
+    - brew: prometheus
+  linux:
+    - apt: prometheus
+    - dnf: prometheus
+
+pulumi:
+  windows:
+    - winget: Pulumi.Pulumi
+    - scoop: pulumi
+    - choco: pulumi
+  macos:
+    - brew: pulumi
+  linux:
+    - curl: "https://get.pulumi.com | sh"
+
+python:
+  windows:
+    - winget: Python.Python.3.12
+    - scoop: python
+    - choco: python
+  macos:
+    - brew: python
+  linux:
+    - apt: python3
+    - dnf: python3
+
+redis:
+  windows:
+    - scoop: redis
+    - choco: redis-64
+  macos:
+    - brew: redis
+  linux:
+    - apt: redis-tools
+    - dnf: redis
+
+rg:
+  windows:
+    - winget: BurntSushi.ripgrep.MSVC
+    - scoop: ripgrep
+    - choco: ripgrep
+  macos:
+    - brew: ripgrep
+  linux:
+    - apt: ripgrep
+    - dnf: ripgrep
+
+rtk:
+  arch_map:
+    amd64: x86_64
+    arm64: aarch64
+  windows:
+    - github: "rtk-ai/rtk rtk-${ARCH}-pc-windows-msvc.zip rtk.exe"
+  macos:
+    - brew: rtk
+  linux:
+    - curl: "https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh"
+
+ruby:
+  windows:
+    - winget: RubyInstallerTeam.Ruby
+    - scoop: ruby
+    - choco: ruby
+  macos:
+    - brew: ruby
+  linux:
+    - apt: ruby
+    - dnf: ruby
+
+rustup:
+  windows:
+    - winget: Rustlang.Rustup
+    - scoop: rustup
+  macos:
+    - curl: "https://sh.rustup.rs | sh -s -- -y"
+  linux:
+    - curl: "https://sh.rustup.rs | sh -s -- -y"
+
+scala:
+  windows:
+    - scoop: scala
+    - choco: scala
+  macos:
+    - brew: scala
+  linux:
+    - apt: scala
+    - dnf: scala
+
+skopeo:
+  macos:
+    - brew: skopeo
+  linux:
+    - apt: skopeo
+    - dnf: skopeo
+
+sops:
+  windows:
+    - winget: Mozilla.Sops
+    - scoop: sops
+    - choco: sops
+  macos:
+    - brew: sops
+  linux:
+    - apt: sops
+    - dnf: sops
+
+sqlite3:
+  windows:
+    - winget: SQLite.SQLite
+    - scoop: sqlite
+    - choco: sqlite
+  macos:
+    - brew: sqlite
+  linux:
+    - apt: sqlite3
+    - dnf: sqlite
+
+starship:
+  windows:
+    - winget: Starship.Starship
+    - scoop: starship
+    - choco: starship
+  macos:
+    - brew: starship
+  linux:
+    - apt: starship
+    - dnf: starship
+
+swift:
+  windows:
+    - winget: Swift.Toolchain
+    - scoop: swift
+  macos:
+    - brew: swift
+  linux:
+    - apt: swiftlang
+    - dnf: swift-lang
+
+terraform:
+  windows:
+    - winget: Hashicorp.Terraform
+    - scoop: terraform
+    - choco: terraform
+  macos:
+    - brew: terraform
+  linux:
+    - apt: terraform
+    - dnf: terraform
+
+tmux:
+  windows:
+    - scoop: tmux
+    - choco: tmux
+  macos:
+    - brew: tmux
+  linux:
+    - apt: tmux
+    - dnf: tmux
+
+vault:
+  windows:
+    - winget: Hashicorp.Vault
+    - scoop: vault
+    - choco: vault
+  macos:
+    - brew: vault
+  linux:
+    - apt: vault
+    - dnf: vault
+
+vim:
+  windows:
+    - winget: vim.vim
+    - scoop: vim
+    - choco: vim
+  macos:
+    - brew: vim
+  linux:
+    - apt: vim
+    - dnf: vim
+
+wget:
+  windows:
+    - winget: GNU.Wget
+    - scoop: wget
+    - choco: wget
+  macos:
+    - brew: wget
+  linux:
+    - apt: wget
+    - dnf: wget
+
+yarn:
+  windows:
+    - winget: Yarn.Yarn
+    - scoop: yarn
+    - choco: yarn
+  macos:
+    - brew: yarn
+  linux:
+    - apt: yarn
+    - dnf: yarn
+
+yq:
+  windows:
+    - winget: MikeFarah.yq
+    - scoop: yq
+    - choco: yq
+  macos:
+    - brew: yq
+  linux:
+    - apt: yq
+    - dnf: yq
+
+zellij:
+  windows:
+    - scoop: zellij
+  macos:
+    - brew: zellij
+  linux:
+    - apt: zellij
+    - dnf: zellij
+
+zig:
+  windows:
+    - winget: zig.zig
+    - scoop: zig
+    - choco: zig
+  macos:
+    - brew: zig
+  linux:
+    - apt: zig
+    - dnf: zig
+
+zoxide:
+  windows:
+    - winget: ajeetdsouza.zoxide
+    - scoop: zoxide
+    - choco: zoxide
+  macos:
+    - brew: zoxide
+  linux:
+    - apt: zoxide
+    - dnf: zoxide

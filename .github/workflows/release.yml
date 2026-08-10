@@ -93,7 +93,7 @@ jobs:
         run: |
           VERSION="${{ needs.build.outputs.version }}"
           cat > nfpm.yaml << NFPMEOF
-          name: aide
+          name: aide-cli
           arch: "${{ matrix.arch == 'amd64' && 'amd64' || 'arm64' }}"
           platform: linux
           version: "${VERSION}"
@@ -104,6 +104,8 @@ jobs:
             AI environment manager — check and install tools for your AI provider.
             Reads aide.yaml and verifies that your AI provider and all required
             tools are installed with correct versions.
+          conflicts:
+            - aide
           homepage: "https://github.com/${{ github.repository }}"
           license: MIT
           contents:
@@ -111,16 +113,16 @@ jobs:
               dst: /usr/local/bin/aide
           NFPMEOF
 
-          nfpm package --packager deb --target "aide_${VERSION}_${{ matrix.arch }}.deb"
-          nfpm package --packager rpm --target "aide-${VERSION}-1.${{ matrix.arch }}.rpm"
+          nfpm package --packager deb --target "aide-cli_${VERSION}_${{ matrix.arch }}.deb"
+          nfpm package --packager rpm --target "aide-cli-${VERSION}-1.${{ matrix.arch }}.rpm"
 
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
           name: aide-linux-pkg-${{ matrix.arch }}
           path: |
-            aide_*.deb
-            aide-*.rpm
+            aide-cli_*.deb
+            aide-cli-*.rpm
           if-no-files-found: error
 
   # ── Checksums ─────────────────────────────────────────────────────
@@ -170,10 +172,10 @@ jobs:
             ### 🐧 Linux
             ```bash
             # .deb (Debian / Ubuntu)
-            sudo dpkg -i aide_*_amd64.deb
+            sudo dpkg -i aide-cli_*_amd64.deb
 
             # .rpm (Fedora / RHEL)
-            sudo rpm -i aide-*-1.amd64.rpm
+            sudo rpm -i aide-cli-*-1.amd64.rpm
 
             # Portable binary
             tar -xzf aide-linux-amd64.tar.gz
@@ -211,10 +213,10 @@ jobs:
             dist/aide-darwin-arm64.tar.gz
             dist/aide-windows-amd64.exe.zip
             dist/aide-windows-arm64.exe.zip
-            dist/aide_*_amd64.deb
-            dist/aide_*_arm64.deb
-            dist/aide-*-1.amd64.rpm
-            dist/aide-*-1.arm64.rpm
+            dist/aide-cli_*_amd64.deb
+            dist/aide-cli_*_arm64.deb
+            dist/aide-cli-*-1.amd64.rpm
+            dist/aide-cli-*-1.arm64.rpm
             dist/aide_*_checksums.txt
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
