@@ -40,11 +40,11 @@ copilot:
 
 opencode:
   windows:
-    - npm: "@opencode-ai/cli"
+    - npm: "opencode-ai"
   macos:
-    - npm: "@opencode-ai/cli"
+    - npm: "opencode-ai"
   linux:
-    - npm: "@opencode-ai/cli"
+    - npm: "opencode-ai"
 
 age:
   windows:

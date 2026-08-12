@@ -28,6 +28,13 @@ type Account struct {
 	Provider string `json:"provider"`
 	Dir      string `json:"dir,omitempty"`
 
+	// Token is a pre-provisioned credential for adapters whose profile can't
+	// start blank (unlike claude/codex, which get authenticated later via
+	// 'aide account login'): copilot's COPILOT_GITHUB_TOKEN needs a real PAT
+	// up front. Not a legacy field — it's consumed by the profile-based
+	// Adapter's Env, not applied directly by the launcher.
+	Token string `json:"token,omitempty"`
+
 	// Legacy fields, kept for backward compatibility with accounts created
 	// before credential profiles existed. Applied directly by the launcher
 	// only when no profile directory exists on disk for the account name.
@@ -232,21 +239,18 @@ func withLock(fn func() error) error {
 }
 
 // ValidateProviderFields checks that a carries what its provider needs to
-// launch. Profile-based accounts (claude/codex with no legacy fields set)
-// need nothing here — CreateProfile enforces their requirements when the
-// profile is materialized. Copilot has no adapter yet, so it still needs a
-// pointer into gh's identity.
+// launch. Profile-based accounts (no legacy fields set) need nothing here —
+// CreateProfile enforces their requirements when the profile is
+// materialized. Copilot's legacy --user path still works for accounts that
+// opt into it, but is no longer required: omitting --user now creates a
+// credential profile instead of the removed 'gh auth switch' mechanism.
 func ValidateProviderFields(a Account) error {
 	switch a.Provider {
-	case "copilot":
-		if a.User == "" && a.Dir == "" {
-			return fmt.Errorf("--user is required for Copilot accounts (GitHub username)")
-		}
-	case "claude", "codex":
-		// Legacy fields (--api-key / --codex-home) are optional now: omitting
-		// them creates a profile-based account instead.
+	case "copilot", "claude", "codex", "opencode":
+		// Legacy fields (--user / --api-key / --codex-home) are optional:
+		// omitting them creates a profile-based account instead.
 	default:
-		return fmt.Errorf("unknown provider %q — must be copilot, claude, or codex", a.Provider)
+		return fmt.Errorf("unknown provider %q — must be copilot, claude, codex, or opencode", a.Provider)
 	}
 	return nil
 }

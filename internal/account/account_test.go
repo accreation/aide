@@ -40,6 +40,20 @@ func TestAddAndGet(t *testing.T) {
 	}
 }
 
+func TestValidateProviderFieldsAcceptsAllFourProvidersWithNoFields(t *testing.T) {
+	for _, provider := range []string{"copilot", "claude", "codex", "opencode"} {
+		if err := ValidateProviderFields(Account{Provider: provider}); err != nil {
+			t.Errorf("expected %q with no fields to be valid (profile-based), got: %v", provider, err)
+		}
+	}
+}
+
+func TestValidateProviderFieldsRejectsUnknownProvider(t *testing.T) {
+	if err := ValidateProviderFields(Account{Provider: "no-such-provider"}); err == nil {
+		t.Error("expected an error for an unknown provider")
+	}
+}
+
 func TestAddRejectsInvalidName(t *testing.T) {
 	tmp := t.TempDir()
 	setHome(t, tmp)
@@ -344,7 +358,7 @@ func TestCreateProfileUnsupportedProvider(t *testing.T) {
 	tmp := t.TempDir()
 	setHome(t, tmp)
 
-	if err := CreateProfile("acme", Account{Provider: "copilot"}); err == nil {
+	if err := CreateProfile("acme", Account{Provider: "no-such-provider"}); err == nil {
 		t.Fatal("expected error for a provider with no adapter")
 	}
 }

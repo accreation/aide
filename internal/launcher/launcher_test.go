@@ -194,6 +194,38 @@ func TestAccountEnvProfileBasedCodexUsesCodexHome(t *testing.T) {
 	}
 }
 
+func TestAccountEnvLegacyCopilotErrorsInsteadOfLaunching(t *testing.T) {
+	setHome(t, t.TempDir()) // no profile dir exists for "legacy-copilot" — legacy path
+
+	acc := account.Account{Provider: "copilot", User: "old-user"}
+	_, err := accountEnv("legacy-copilot", acc, []string{"PATH=/usr/bin"})
+	if err == nil {
+		t.Fatal("expected the removed 'gh auth switch' path to error rather than silently launch as the wrong user")
+	}
+}
+
+func TestAccountEnvProfileBasedCopilotUsesGHConfigDir(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	acc := account.Account{Provider: "copilot", Token: "ghp_x"}
+	if err := account.CreateProfile("acme", acc); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+
+	env, err := accountEnv("acme", acc, []string{"PATH=/usr/bin"})
+	if err != nil {
+		t.Fatalf("accountEnv failed: %v", err)
+	}
+	root, _ := account.ProfileDir("acme", acc)
+	if !containsEnv(env, "GH_CONFIG_DIR="+filepath.Join(root, "gh")) {
+		t.Errorf("expected GH_CONFIG_DIR in env, got %v", env)
+	}
+	if !containsEnv(env, "COPILOT_GITHUB_TOKEN=ghp_x") {
+		t.Errorf("expected the profile's token to be injected, got %v", env)
+	}
+}
+
 func TestApplyAccountRejectsProviderMismatch(t *testing.T) {
 	setHome(t, t.TempDir())
 

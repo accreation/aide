@@ -3,11 +3,13 @@ package account
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"aide/internal/fsutil"
 )
@@ -105,6 +107,67 @@ var Adapters = map[string]*Adapter{
 		},
 		LoginArgv: func(profileRoot string, acc Account) []string {
 			return []string{"codex", "login"}
+		},
+	},
+	"copilot": {
+		Provider: "copilot",
+		Dirs:     []string{"copilot", "gh"},
+		// COPILOT_GITHUB_TOKEN/GH_TOKEN/GITHUB_TOKEN all short-circuit
+		// copilot's own credential store ahead of GH_CONFIG_DIR in its
+		// 5-tier identity-resolution chain; scrubbing all three (rather
+		// than blanking them) keeps GH_CONFIG_DIR authoritative when no
+		// acc.Token is set, and keeps acc.Token authoritative when one is.
+		Scrub: []string{"COPILOT_GITHUB_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"},
+		Env: func(profileRoot string, acc Account) ([]string, error) {
+			copilotHome, err := filepath.Abs(filepath.Join(profileRoot, "copilot"))
+			if err != nil {
+				return nil, err
+			}
+			ghConfigDir, err := filepath.Abs(filepath.Join(profileRoot, "gh"))
+			if err != nil {
+				return nil, err
+			}
+			env := []string{
+				"COPILOT_HOME=" + copilotHome,
+				"GH_CONFIG_DIR=" + ghConfigDir,
+				"COPILOT_AUTO_UPDATE=false",
+			}
+			// With no acc.Token, identity falls through to gh's own store
+			// under GH_CONFIG_DIR (seeded via LoginArgv's `gh auth login`).
+			if acc.Token != "" {
+				env = append(env, "COPILOT_GITHUB_TOKEN="+acc.Token)
+			}
+			return env, nil
+		},
+		Identity: func(profileRoot string, env []string, acc Account) (Identity, error) {
+			return copilotIdentity(env)
+		},
+		LoginArgv: func(profileRoot string, acc Account) []string {
+			// Not scriptable: copilot's own login is a device-code flow, and
+			// GH_CONFIG_DIR is the only directory-scoped lever gh exposes,
+			// so seed this profile's identity through gh instead.
+			return []string{"gh", "auth", "login", "--insecure-storage"}
+		},
+	},
+	"opencode": {
+		Provider: "opencode",
+		Dirs:     []string{"opencode"},
+		// OPENCODE_AUTH_CONTENT lets auth be supplied inline instead of from
+		// $XDG_DATA_HOME/opencode/auth.json; an ambient value would silently
+		// override this profile's isolated credentials.
+		Scrub: []string{"OPENCODE_AUTH_CONTENT"},
+		Env: func(profileRoot string, acc Account) ([]string, error) {
+			dir, err := filepath.Abs(filepath.Join(profileRoot, "opencode"))
+			if err != nil {
+				return nil, err
+			}
+			return []string{"XDG_DATA_HOME=" + dir}, nil
+		},
+		Identity: func(profileRoot string, env []string, acc Account) (Identity, error) {
+			return opencodeIdentity(env)
+		},
+		LoginArgv: func(profileRoot string, acc Account) []string {
+			return []string{"opencode", "auth", "login"}
 		},
 	},
 }
@@ -218,4 +281,96 @@ func firstLine(b []byte) string {
 		s = s[:i]
 	}
 	return s
+}
+
+func envValue(env []string, key string) string {
+	prefix := key + "="
+	for _, e := range env {
+		if strings.HasPrefix(e, prefix) {
+			return e[len(prefix):]
+		}
+	}
+	return ""
+}
+
+// copilotHTTPClient and copilotUserURL are overridden in tests so
+// copilotIdentity can be exercised against an httptest.Server instead of the
+// real GitHub API.
+var (
+	copilotHTTPClient = &http.Client{Timeout: 10 * time.Second}
+	copilotUserURL    = "https://api.github.com/user"
+)
+
+// copilotIdentity predicts who copilot WILL run as by replicating the first
+// two steps of its own token-resolution chain (COPILOT_GITHUB_TOKEN, then
+// `gh auth token` under GH_CONFIG_DIR) and probing GitHub's unbilled
+// GET /user endpoint with whatever token that yields — copilot itself has no
+// "auth status" subcommand, and calling it would cost a billed request.
+func copilotIdentity(env []string) (Identity, error) {
+	token := envValue(env, "COPILOT_GITHUB_TOKEN")
+	if token == "" {
+		token = ghAuthToken(env)
+	}
+	if token == "" {
+		return Identity{LoggedIn: false, Label: "not logged in"}, nil
+	}
+	return copilotProbeUser(token)
+}
+
+// ghAuthToken runs `gh auth token` with env applied, returning "" for any
+// failure (missing gh, no stored credential under GH_CONFIG_DIR) rather than
+// an error — mirroring tier 5 of copilot's fail-open resolution chain.
+func ghAuthToken(env []string) string {
+	cmd := execCommand("gh", "auth", "token")
+	cmd.Env = env
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
+}
+
+func copilotProbeUser(token string) (Identity, error) {
+	req, err := http.NewRequest(http.MethodGet, copilotUserURL, nil)
+	if err != nil {
+		return Identity{}, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+	resp, err := copilotHTTPClient.Do(req)
+	if err != nil {
+		return Identity{LoggedIn: false, Label: "not logged in"}, nil
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return Identity{LoggedIn: false, Label: "not logged in"}, nil
+	}
+	var body struct {
+		Login string `json:"login"`
+	}
+	_ = json.NewDecoder(resp.Body).Decode(&body)
+	label := body.Login
+	if label == "" {
+		label = "logged in"
+	}
+	return Identity{LoggedIn: true, Label: label}, nil
+}
+
+// opencodeIdentity treats $XDG_DATA_HOME/opencode/auth.json's existence as
+// the primary logged-in signal — opencode login is an interactive
+// (@clack/prompts) TTY flow with no scriptable status command guaranteed
+// stable across versions — and upgrades the label via `opencode auth list`
+// when that happens to run cleanly.
+func opencodeIdentity(env []string) (Identity, error) {
+	dataHome := envValue(env, "XDG_DATA_HOME")
+	if dataHome == "" {
+		return Identity{LoggedIn: false, Label: "not logged in"}, nil
+	}
+	if _, err := os.Stat(filepath.Join(dataHome, "opencode", "auth.json")); err != nil {
+		return Identity{LoggedIn: false, Label: "not logged in"}, nil
+	}
+	if id, err := runIdentityCheck(env, []string{"opencode", "auth", "list"}, nil); err == nil && id.LoggedIn {
+		return id, nil
+	}
+	return Identity{LoggedIn: true, Label: "logged in"}, nil
 }

@@ -24,13 +24,13 @@ var accountAddCmd = &cobra.Command{
 	Short: "Add or update a provider account",
 	Long: `Register an account for use with the 'account' field in aide.yaml.
 
-For claude and codex, omitting the legacy flags below creates a credential
-profile at ~/.aide/accounts/<name>/ instead — run 'aide account login <name>'
-next to authenticate it. Copilot has no credential-profile support yet and
-still requires --user.
+Omitting the legacy flags below creates a credential profile at
+~/.aide/accounts/<name>/ instead — run 'aide account login <name>' next to
+authenticate it (claude, codex, opencode) or pass --token up front (copilot).
 
 Provider-specific flags:
-  Copilot:  --user <github-username>
+  Copilot:  --user <github-username>   (legacy — omit for a credential profile)
+            --token <github-pat>       (seeds COPILOT_GITHUB_TOKEN on a profile)
   Claude:   --api-key <key>            (legacy — omit for a credential profile)
   Codex:    --codex-home <path>        (legacy — omit for a credential profile)
   Any:      --dir <path>               (adopt an existing directory as the profile root)`,
@@ -86,16 +86,18 @@ var (
 	accountUser            string
 	accountAPIKey          string
 	accountCodexHome       string
+	accountToken           string
 	accountDir             string
 	accountRemoveForce     bool
 	accountKeepCredentials bool
 )
 
 func init() {
-	accountAddCmd.Flags().StringVarP(&accountProvider, "provider", "p", "", "Provider type (copilot, claude, codex)")
-	accountAddCmd.Flags().StringVar(&accountUser, "user", "", "GitHub username (for Copilot)")
+	accountAddCmd.Flags().StringVarP(&accountProvider, "provider", "p", "", "Provider type (copilot, claude, codex, opencode)")
+	accountAddCmd.Flags().StringVar(&accountUser, "user", "", "GitHub username (legacy, for Copilot)")
 	accountAddCmd.Flags().StringVar(&accountAPIKey, "api-key", "", "API key (legacy, for Claude)")
 	accountAddCmd.Flags().StringVar(&accountCodexHome, "codex-home", "", "Codex home directory path (legacy, for Codex)")
+	accountAddCmd.Flags().StringVar(&accountToken, "token", "", "Pre-provisioned credential to seed a profile with (e.g. a GitHub PAT for Copilot)")
 	accountAddCmd.Flags().StringVar(&accountDir, "dir", "", "Adopt an existing directory as the credential profile root")
 	accountAddCmd.MarkFlagRequired("provider")
 
@@ -119,6 +121,7 @@ func runAccountAdd(cmd *cobra.Command, args []string) error {
 		User:      accountUser,
 		APIKey:    accountAPIKey,
 		CodexHome: accountCodexHome,
+		Token:     accountToken,
 	}
 	if accountDir != "" {
 		abs, err := filepath.Abs(accountDir)
@@ -136,7 +139,7 @@ func runAccountAdd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	profileCapable := a.Provider == "claude" || a.Provider == "codex"
+	profileCapable := a.Provider == "claude" || a.Provider == "codex" || a.Provider == "copilot" || a.Provider == "opencode"
 	if profileCapable && !account.HasLegacyFields(a) {
 		if err := account.CreateProfile(name, a); err != nil {
 			return fmt.Errorf("creating credential profile: %w", err)
@@ -146,7 +149,11 @@ func runAccountAdd(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		fmt.Printf("Account %q added (%s, profile at %s).\n", name, a.Provider, dir)
-		fmt.Printf("Run 'aide account login %s' to authenticate, then use 'account: %s' in aide.yaml.\n", name, name)
+		if a.Token != "" {
+			fmt.Printf("Seeded with the provided --token. Use 'account: %s' in aide.yaml, or 'aide account status %s' to verify it first.\n", name, name)
+		} else {
+			fmt.Printf("Run 'aide account login %s' to authenticate, then use 'account: %s' in aide.yaml.\n", name, name)
+		}
 		return nil
 	}
 
@@ -179,7 +186,7 @@ func runAccountList(cmd *cobra.Command, args []string) error {
 			dir, _ := account.ProfileDir(name, a)
 			detail = fmt.Sprintf("(profile: %s)", dir)
 		case a.Provider == "copilot":
-			detail = fmt.Sprintf("(user: %s)", a.User)
+			detail = fmt.Sprintf("(user: %s — legacy, gh auth switch removed; re-add without --user)", a.User)
 		case a.Provider == "claude":
 			detail = "(api key set)"
 		case a.Provider == "codex":

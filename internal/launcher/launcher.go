@@ -114,27 +114,7 @@ func (l *Launcher) applyAccount(providerName string, base []string) ([]string, e
 		return nil, fmt.Errorf("account %q is configured for provider %q, but aide.yaml provider is %q", l.AccountName, acc.Provider, providerName)
 	}
 
-	// copilot's identity lever (gh auth switch) is a global side effect,
-	// not an environment change, and has no profile-based replacement yet.
-	if acc.Provider == "copilot" && !account.IsProfileBased(l.AccountName, acc) {
-		if err := applyCopilotAccount(acc); err != nil {
-			return nil, err
-		}
-	}
-
 	return accountEnv(l.AccountName, acc, base)
-}
-
-func applyCopilotAccount(acc account.Account) error {
-	// gh auth switch <user>
-	switchCmd := exec.Command("gh", "auth", "switch", "--user", acc.User)
-	switchCmd.Stdin = os.Stdin
-	switchCmd.Stdout = os.Stderr // show output to user
-	switchCmd.Stderr = os.Stderr
-	if err := switchCmd.Run(); err != nil {
-		return fmt.Errorf("gh auth switch %s failed: %w", acc.User, err)
-	}
-	return nil
 }
 
 // accountEnv returns the environment for launching acc's provider on top of
@@ -158,7 +138,14 @@ func accountEnv(name string, acc account.Account, base []string) ([]string, erro
 
 	switch acc.Provider {
 	case "copilot":
-		return base, nil
+		// The old lever here was `gh auth switch --user <name>`, a global
+		// mutation with no environment-variable equivalent — it has been
+		// removed in favor of the copilot Adapter's GH_CONFIG_DIR/
+		// COPILOT_HOME isolation. acc.User was a pointer into gh's global
+		// state, not a credential, so there is nothing to migrate
+		// automatically: the account must be re-authenticated once into a
+		// profile.
+		return nil, fmt.Errorf("account %q uses the removed 'gh auth switch' method — re-add it without --user (optionally with --token) to get an isolated credential profile, then run 'aide account login %s'", name, name)
 	case "claude":
 		return replaceEnv(base, "ANTHROPIC_API_KEY", acc.APIKey), nil
 	case "codex":

@@ -58,6 +58,17 @@ func (c *Checker) CheckAccount() display.CheckResult {
 		}
 	}
 	if !account.IsProfileBased(c.cfg.Account, acc) {
+		// Unlike claude/codex's legacy fields, a copilot account with no
+		// profile can no longer launch at all — the 'gh auth switch' lever
+		// it relied on was removed. Fail the check here rather than
+		// reporting Ok:true and letting the launcher's error be the first
+		// sign of trouble.
+		if acc.Provider == "copilot" {
+			return display.CheckResult{
+				Name:      c.cfg.Account,
+				Installed: fmt.Sprintf("uses the removed 'gh auth switch' method — re-add without --user to get a credential profile, then run 'aide account login %s'", c.cfg.Account),
+			}
+		}
 		return display.CheckResult{Name: c.cfg.Account, Ok: true, Installed: fmt.Sprintf("%s (legacy)", acc.Provider)}
 	}
 

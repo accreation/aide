@@ -366,17 +366,26 @@ When a tool has a version constraint (e.g., `>=2.0.0`), isolated mode resolves t
 
 ## Multi-Account Switching
 
-Aide supports **named provider accounts** — configure multiple Claude, Codex, or Copilot accounts and switch between them per project.
+Aide supports **named provider accounts** — configure multiple Claude, Codex, Copilot, or OpenCode accounts and switch between them per project.
 
-For `claude` and `codex`, an account is a **credential profile**: a directory under `~/.aide/accounts/<name>/` that aide binds a launched process to via environment variables (`CLAUDE_CONFIG_DIR`, `CODEX_HOME`). This isolates the whole credential and session state — including subscription/OAuth logins, not just API keys — so two projects on two different companies' subscriptions never share or overwrite each other's session. `copilot` doesn't have a credential-profile adapter yet; see [Legacy accounts](#legacy-accounts) below.
+Every provider account is a **credential profile**: a directory under `~/.aide/accounts/<name>/` that aide binds a launched process to via environment variables (`CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `GH_CONFIG_DIR`/`COPILOT_HOME` for copilot, `XDG_DATA_HOME` for opencode). This isolates the whole credential and session state — including subscription/OAuth logins, not just API keys — so two projects on two different companies' subscriptions never share or overwrite each other's session.
 
 ### Account Management
 
 ```bash
-# Add a claude or codex account. With no --api-key / --codex-home, this
-# creates a credential profile instead of an API-key override.
+# Add an account. With no legacy flags (--api-key / --codex-home / --user),
+# this creates a credential profile instead of a per-provider field override.
 aide account add acme-claude --provider claude
 aide account add acme-codex --provider codex
+aide account add acme-opencode --provider opencode
+
+# Copilot profiles can be seeded with a PAT up front (fine-grained, with
+# "Copilot Requests" permission, or a gh-issued gho_/ghu_ token — classic
+# ghp_ tokens are rejected)...
+aide account add acme-copilot --provider copilot --token github_pat_xxx
+# ...or left blank and authenticated via 'aide account login', which runs
+# `gh auth login --insecure-storage` scoped to this profile's GH_CONFIG_DIR.
+aide account add acme-copilot --provider copilot
 
 # Authenticate the profile (runs the provider's own login flow, scoped to
 # this profile's directory — subscription/OAuth logins work here).
@@ -400,6 +409,8 @@ aide account list
 #   --keep-credentials remove the entry but leave the profile on disk
 aide account remove acme-claude --force
 ```
+
+> Copilot's identity resolution silently falls through several tiers (its own token env var, `GH_TOKEN`, `GITHUB_TOKEN`, its own credential store, then `gh auth token`) — a bad or missing credential doesn't error, it just runs (and bills) as whatever `gh auth token` returns ambiently. The copilot adapter scrubs `GH_TOKEN`/`GITHUB_TOKEN` and pins `GH_CONFIG_DIR` so that fallback resolves inside the profile instead of your real `gh` session. This has only been verified on Linux with GNOME Keyring; on macOS/Windows copilot's credential store is process-global (and `gh` may be absent from `PATH` on Windows), so double-check isolation there before relying on it.
 
 Accounts are stored in `~/.aide/accounts.json` with permissions `0600`; credential profile directories live under `~/.aide/accounts/` at `0700` (owner-only — never world-readable).
 
@@ -431,21 +442,19 @@ This means you can have different projects use different accounts — no manual 
 
 ### Legacy accounts
 
-Accounts created before credential profiles existed (or added with `--api-key` / `--codex-home` / `--user`) keep working exactly as before — they're per-provider field overrides, not isolated credential profiles, and have no login/status support:
+Accounts created before credential profiles existed (or added with `--api-key` / `--codex-home`) keep working exactly as before — they're per-provider field overrides, not isolated credential profiles, and have no login/status support:
 
 | Provider | Account action |
 |----------|---------------|
-| `copilot` | Runs `gh auth switch --user <username>` to switch the active GitHub user (a global mutation — see the caveat below) |
 | `claude` | Sets `ANTHROPIC_API_KEY=<api-key>` in the provider's environment (overrides subscription billing) |
 | `codex` | Sets `CODEX_HOME=<path>` in the provider's environment |
 
 ```bash
-aide account add work-copilot --provider copilot --user work-username
 aide account add personal-claude --provider claude --api-key sk-ant-xxx
 aide account add my-codex --provider codex --codex-home /path/to/codex/config
 ```
 
-`copilot`'s `gh auth switch` mutates `~/.config/gh/hosts.yml` globally and persists after `aide` exits — two concurrent `aide` sessions on different copilot accounts will interfere with each other. Credential-profile isolation for `copilot` (and `opencode`) is planned but not yet implemented.
+**`copilot` accounts added with `--user` (before credential profiles) no longer work.** That flag ran `gh auth switch --user <username>` — a global mutation of `~/.config/gh/hosts.yml` that persisted after `aide` exited and made two concurrent `aide` sessions on different copilot accounts interfere with each other. That mechanism has been removed outright, not deprecated: `aide` refuses to launch with a clear error instead of silently running as whatever `gh` user happens to be active. `user:` was a pointer into global `gh` state, not a credential, so there is nothing to migrate automatically — re-add the account without `--user` (optionally with `--token`, see above) to get an isolated profile, then run `aide account login <name>`.
 
 ---
 

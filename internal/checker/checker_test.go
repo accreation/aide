@@ -197,6 +197,22 @@ func TestCheckAccountLegacyIsTrustedWithoutIdentityCheck(t *testing.T) {
 	}
 }
 
+func TestCheckAccountLegacyCopilotFailsWithUpgradeMessage(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	if err := account.Add("acme", account.Account{Provider: "copilot", User: "old-user"}); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+
+	c := New(&config.Config{Provider: "copilot", Account: "acme"})
+	r := c.CheckAccount()
+	if r.Ok {
+		t.Errorf("expected a legacy copilot account (gh auth switch removed) to fail the check, got %+v", r)
+	}
+}
+
 func TestCheckAccountProfileBasedNotLoggedIn(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)
