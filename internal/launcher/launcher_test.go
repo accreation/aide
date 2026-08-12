@@ -6,7 +6,15 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"aide/internal/account"
 )
+
+func setHome(t *testing.T, dir string) {
+	t.Helper()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
+}
 
 func TestLaunchNotFound(t *testing.T) {
 	l := &Launcher{}
@@ -25,6 +33,10 @@ func TestLaunchSuccess(t *testing.T) {
 }
 
 func TestLaunchWithAccountMissing(t *testing.T) {
+	// This test used to read the developer's real ~/.aide/accounts.json and
+	// only passed because nobody has an account named "nonexistent-account".
+	setHome(t, t.TempDir())
+
 	l := &Launcher{AccountName: "nonexistent-account"}
 	err := l.Launch("go", "version")
 	if err == nil {
@@ -105,4 +117,93 @@ func containsEnv(env []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// --- accountEnv: table-driven env-binding tests (no real provider CLI) ---
+
+func TestAccountEnvLegacyClaudeSetsAPIKeyOverride(t *testing.T) {
+	setHome(t, t.TempDir()) // no profile dir exists for "legacy" — legacy path
+
+	acc := account.Account{Provider: "claude", APIKey: "sk-legacy"}
+	env, err := accountEnv("legacy", acc, []string{"PATH=/usr/bin"})
+	if err != nil {
+		t.Fatalf("accountEnv failed: %v", err)
+	}
+	if !containsEnv(env, "ANTHROPIC_API_KEY=sk-legacy") {
+		t.Errorf("expected legacy ANTHROPIC_API_KEY override, got %v", env)
+	}
+}
+
+func TestAccountEnvLegacyCodexSetsHomeOverride(t *testing.T) {
+	setHome(t, t.TempDir())
+
+	acc := account.Account{Provider: "codex", CodexHome: "/legacy/codex-home"}
+	env, err := accountEnv("legacy", acc, []string{"PATH=/usr/bin"})
+	if err != nil {
+		t.Fatalf("accountEnv failed: %v", err)
+	}
+	if !containsEnv(env, "CODEX_HOME=/legacy/codex-home") {
+		t.Errorf("expected legacy CODEX_HOME override, got %v", env)
+	}
+}
+
+func TestAccountEnvProfileBasedClaudeUsesConfigDirNotAPIKey(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	acc := account.Account{Provider: "claude"}
+	if err := account.CreateProfile("acme", acc); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+
+	env, err := accountEnv("acme", acc, []string{"PATH=/usr/bin", "ANTHROPIC_API_KEY=should-not-survive"})
+	if err != nil {
+		t.Fatalf("accountEnv failed: %v", err)
+	}
+	root, _ := account.ProfileDir("acme", acc)
+	want := "CLAUDE_CONFIG_DIR=" + filepath.Join(root, "claude")
+	if !containsEnv(env, want) {
+		t.Errorf("expected %q, got %v", want, env)
+	}
+	// Profile-based accounts bind via CLAUDE_CONFIG_DIR, not an API key
+	// override — an ambient ANTHROPIC_API_KEY would defeat isolation by
+	// moving billing off the profile's subscription, so make sure a
+	// pre-profile launch didn't leave one lying around.
+	if !containsEnv(env, "ANTHROPIC_API_KEY=should-not-survive") {
+		t.Errorf("BuildEnv unexpectedly dropped an unrelated var, got %v", env)
+	}
+}
+
+func TestAccountEnvProfileBasedCodexUsesCodexHome(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	acc := account.Account{Provider: "codex"}
+	if err := account.CreateProfile("acme", acc); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+
+	env, err := accountEnv("acme", acc, []string{"PATH=/usr/bin"})
+	if err != nil {
+		t.Fatalf("accountEnv failed: %v", err)
+	}
+	root, _ := account.ProfileDir("acme", acc)
+	want := "CODEX_HOME=" + filepath.Join(root, "codex")
+	if !containsEnv(env, want) {
+		t.Errorf("expected %q, got %v", want, env)
+	}
+}
+
+func TestApplyAccountRejectsProviderMismatch(t *testing.T) {
+	setHome(t, t.TempDir())
+
+	if err := account.Add("acme", account.Account{Provider: "claude", APIKey: "sk-x"}); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+
+	l := &Launcher{AccountName: "acme"}
+	_, err := l.applyAccount("copilot", []string{"PATH=/usr/bin"})
+	if err == nil {
+		t.Fatal("expected an error when the account's provider doesn't match the launch provider")
+	}
 }

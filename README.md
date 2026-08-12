@@ -366,66 +366,86 @@ When a tool has a version constraint (e.g., `>=2.0.0`), isolated mode resolves t
 
 ## Multi-Account Switching
 
-Aide supports **named provider accounts** — configure multiple Copilot, Claude, or Codex accounts and switch between them per project.
+Aide supports **named provider accounts** — configure multiple Claude, Codex, or Copilot accounts and switch between them per project.
+
+For `claude` and `codex`, an account is a **credential profile**: a directory under `~/.aide/accounts/<name>/` that aide binds a launched process to via environment variables (`CLAUDE_CONFIG_DIR`, `CODEX_HOME`). This isolates the whole credential and session state — including subscription/OAuth logins, not just API keys — so two projects on two different companies' subscriptions never share or overwrite each other's session. `copilot` doesn't have a credential-profile adapter yet; see [Legacy accounts](#legacy-accounts) below.
 
 ### Account Management
 
 ```bash
-# Add a Copilot account (switches GitHub user via 'gh auth switch')
-aide account add work-copilot --provider copilot --user work-username
+# Add a claude or codex account. With no --api-key / --codex-home, this
+# creates a credential profile instead of an API-key override.
+aide account add acme-claude --provider claude
+aide account add acme-codex --provider codex
 
-# Add a Claude account (sets ANTHROPIC_API_KEY)
-aide account add personal-claude --provider claude --api-key sk-ant-xxx
+# Authenticate the profile (runs the provider's own login flow, scoped to
+# this profile's directory — subscription/OAuth logins work here).
+aide account login acme-claude
 
-# Add a Codex account (sets CODEX_HOME)
-aide account add my-codex --provider codex --codex-home /path/to/codex/config
+# Check whether a profile is actually logged in
+aide account status acme-claude
+
+# Adopt an existing directory as the profile root (e.g. a CODEX_HOME you
+# already use) instead of creating a new one under ~/.aide/accounts/
+aide account add my-codex --provider codex --dir /path/to/existing/codex-home
+
+# Print an account's credential profile directory
+aide account path acme-claude
 
 # List registered accounts
 aide account list
 
-# Remove an account
-aide account remove personal-claude
+# Remove an account. If it has a credential profile on disk, pass one of:
+#   --force            also delete the profile directory
+#   --keep-credentials remove the entry but leave the profile on disk
+aide account remove acme-claude --force
 ```
 
-Accounts are stored in `~/.aide/accounts.json` with permissions `0600` (owner read/write only — credentials are never world-readable).
+Accounts are stored in `~/.aide/accounts.json` with permissions `0600`; credential profile directories live under `~/.aide/accounts/` at `0700` (owner-only — never world-readable).
 
 ### Using Accounts in Projects
 
 Reference an account in your `aide.yaml`:
 
 ```yaml
-provider: copilot
-account: work-copilot
+provider: claude
+account: acme-claude
 
 tools:
   - name: gh
 ```
 
-When Aide launches the provider, it applies the account **before** starting the process:
+`aide` verifies the account is actually logged in as part of its normal check, before launching the provider — a misconfigured or logged-out account fails the check (exit 1) rather than silently launching on the wrong identity:
+
+```
+Aide — environment check
+───────────────────────
+  OK    provider: claude
+  OK    account: acme-claude — anar@acme.example
+  OK    gh >= 2.65.0 (2.97.0)
+```
+
+This means you can have different projects use different accounts — no manual switching needed. Launch any project with `aide` (or `aide start`) and the right account is applied automatically.
+
+> 💡 Combine isolated mode with account switching for fully self-contained project environments: `mode: isolated` + `account: acme-claude` gives you both tool isolation and account isolation.
+
+### Legacy accounts
+
+Accounts created before credential profiles existed (or added with `--api-key` / `--codex-home` / `--user`) keep working exactly as before — they're per-provider field overrides, not isolated credential profiles, and have no login/status support:
 
 | Provider | Account action |
 |----------|---------------|
-| `copilot` | Runs `gh auth switch --user <username>` to switch the active GitHub user |
-| `claude` | Sets `ANTHROPIC_API_KEY=<api-key>` in the provider's environment |
+| `copilot` | Runs `gh auth switch --user <username>` to switch the active GitHub user (a global mutation — see the caveat below) |
+| `claude` | Sets `ANTHROPIC_API_KEY=<api-key>` in the provider's environment (overrides subscription billing) |
 | `codex` | Sets `CODEX_HOME=<path>` in the provider's environment |
 
-This means you can have different projects use different accounts — no manual switching needed.
-
-### Example: Work vs Personal
-
 ```bash
-# ~/work-project/aide.yaml
-# provider: copilot
-# account: work-copilot
-
-# ~/personal-project/aide.yaml
-# provider: claude
-# account: personal-claude
+aide account add work-copilot --provider copilot --user work-username
+aide account add personal-claude --provider claude --api-key sk-ant-xxx
+aide account add my-codex --provider codex --codex-home /path/to/codex/config
 ```
 
-Launch either project with `aide` (or `aide start`) and the correct account is applied automatically.
-
-> 💡 Combine isolated mode with account switching for fully self-contained project environments: `mode: isolated` + `account: work-copilot` gives you both tool isolation and account isolation.
+`copilot`'s `gh auth switch` mutates `~/.config/gh/hosts.yml` globally and persists after `aide` exits — two concurrent `aide` sessions on different copilot accounts will interfere with each other. Credential-profile isolation for `copilot` (and `opencode`) is planned but not yet implemented.
 
 ---
 
@@ -568,6 +588,7 @@ This changes directory to the project path and runs the full check + launch flow
 - `~/.aide/` — configuration directory (cache, project registry, accounts)
 - `~/.aide/projects.json` — project name → path registry
 - `~/.aide/accounts.json` — provider accounts (permissions `0600`, owner read/write only)
+- `~/.aide/accounts/<name>/` — credential profile directories for claude/codex accounts (permissions `0700`)
 - `~/.local/bin/` — user-local binary directory for GitHub release installations
 
 ---
@@ -579,9 +600,9 @@ This changes directory to the project path and runs the full check + launch flow
 ```
 cmd/            — CLI surface (cobra commands): root, init, add, install, start, account, cache
 internal/
-  account/      — provider account credentials (~/.aide/accounts.json), used by launcher
+  account/      — provider account credentials (~/.aide/accounts.json) and claude/codex credential-profile adapters, used by checker and launcher
   config/       — aide.yaml parsing (find upwards from cwd, parse YAML)
-  checker/      — verifies binaries exist in PATH (or .aide/shims for isolated mode) and satisfy semver constraints
+  checker/      — verifies binaries exist in PATH (or .aide/shims for isolated mode) and satisfy semver constraints; verifies configured accounts are logged in
   installer/    — resolves tool → package-manager mapping via embedded recipes.yaml, executes install; handles project-local isolation (.aide/store/ + shims)
   launcher/     — execs the provider binary inheriting stdin/stdout/stderr; applies account switching and isolated PATH
   display/      — formats check/install results for terminal output
@@ -597,7 +618,7 @@ internal/
 - **Version detection** tries `--version` first, then `-v`, then the `version` subcommand. Uses regex to extract the first semver from the output.
 - **`aide start`** uses a JSON registry at `~/.aide/projects.json` (name → absolute path), chdir's into the project, then runs the full check + launch flow.
 - **Isolated mode** installs tools to `.aide/store/<tool>/<version>/bin/` and creates shims in `.aide/shims/` — prepended to `PATH` before launching the provider. Only `github` and `pipx` recipes support full isolation; system PMs fall back to global install.
-- **Account switching** reads credentials from `~/.aide/accounts.json` (permissions `0600`) and applies provider-specific switching before launch: `gh auth switch` for Copilot, `ANTHROPIC_API_KEY` for Claude, `CODEX_HOME` for Codex.
+- **Account switching**: `claude`/`codex` accounts with a credential profile (`~/.aide/accounts/<name>/`, `0700`) bind a launched process to it via `internal/account`'s per-provider `Adapter` (`CLAUDE_CONFIG_DIR` / `CODEX_HOME`), verified with a cheap identity check in `Checker.CheckAccount()` before launch. Accounts without a profile fall back to the pre-profile legacy fields in `~/.aide/accounts.json` (`0600`): `gh auth switch` for Copilot, `ANTHROPIC_API_KEY` for Claude, `CODEX_HOME` for Codex.
 - **PATH management** for GitHub release installs: Aide automatically adds `~/.local/bin` to your user PATH (via `~/.bashrc`, `~/.zshrc` on Unix, or `[Environment]::SetEnvironmentVariable` on Windows).
 
 ### Dependencies

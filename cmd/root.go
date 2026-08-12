@@ -83,19 +83,28 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		chk = checker.New(cfg)
 	}
 	providerResult := chk.CheckProvider()
+	accountResult := chk.CheckAccount()
 	toolResults := chk.CheckTools()
 
 	fmt.Println("Aide — environment check")
 	fmt.Println("───────────────────────")
 	display.PrintProviderResult(os.Stdout, providerResult)
+	display.PrintAccountResult(os.Stdout, accountResult)
 	display.PrintToolResults(os.Stdout, toolResults)
 
-	if !display.AllOk(providerResult, toolResults) {
+	if !display.AllOk(providerResult, accountResult, toolResults) {
 		fmt.Println("\nSome items are missing or outdated. Run 'aide install' to fix.")
 		os.Exit(1)
 	}
 
 	fmt.Println("\nAll checks passed! Launching provider...")
+	return launchProvider(cfg, projectDir)
+}
+
+// launchProvider runs the standard launch tail shared by runCheck and
+// runInstall: build a Launcher for cfg.Account, apply isolated-mode PATH if
+// configured, and exec the provider.
+func launchProvider(cfg *config.Config, projectDir string) error {
 	l := &launcher.Launcher{AccountName: cfg.Account}
 	extraArgs := strings.Fields(cfg.Args)
 	if cfg.IsIsolated() {

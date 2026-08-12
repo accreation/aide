@@ -1,10 +1,12 @@
 package checker
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 
+	"aide/internal/account"
 	"aide/internal/config"
 	"aide/internal/display"
 	"aide/internal/installer"
@@ -28,6 +30,60 @@ func NewWithProjectDir(cfg *config.Config, projectDir string) *Checker {
 // CheckProvider checks if the configured provider binary is available in PATH.
 func (c *Checker) CheckProvider() display.CheckResult {
 	return c.checkBinary(c.cfg.Provider, "")
+}
+
+// CheckAccount verifies the account configured for this project (if any) is
+// actually logged in, before the provider is launched. An accountless
+// project returns CheckResult{Ok: true} with an empty Name, so it never
+// gates the launch and display prints nothing for it — the pre-existing
+// zero-account behavior must stay bit-identical.
+//
+// A legacy account (accounts.json fields, no on-disk credential profile)
+// has no identity check available yet, so it is trusted as before rather
+// than newly gated — introducing a fail-closed check here would be a
+// behavior change for every account created before profiles existed.
+func (c *Checker) CheckAccount() display.CheckResult {
+	if c.cfg.Account == "" {
+		return display.CheckResult{Ok: true}
+	}
+
+	acc, err := account.Get(c.cfg.Account)
+	if err != nil {
+		return display.CheckResult{Name: c.cfg.Account, Installed: err.Error()}
+	}
+	if acc.Provider != c.cfg.Provider {
+		return display.CheckResult{
+			Name:      c.cfg.Account,
+			Installed: fmt.Sprintf("configured for provider %q, but aide.yaml provider is %q", acc.Provider, c.cfg.Provider),
+		}
+	}
+	if !account.IsProfileBased(c.cfg.Account, acc) {
+		return display.CheckResult{Name: c.cfg.Account, Ok: true, Installed: fmt.Sprintf("%s (legacy)", acc.Provider)}
+	}
+
+	adapter, ok := account.Adapters[acc.Provider]
+	if !ok || adapter.Identity == nil {
+		return display.CheckResult{Name: c.cfg.Account, Ok: true, Installed: acc.Provider}
+	}
+	root, err := account.ProfileDir(c.cfg.Account, acc)
+	if err != nil {
+		return display.CheckResult{Name: c.cfg.Account, Installed: err.Error()}
+	}
+	env, err := account.BuildEnv(adapter, root, acc, os.Environ())
+	if err != nil {
+		return display.CheckResult{Name: c.cfg.Account, Installed: err.Error()}
+	}
+	id, err := adapter.Identity(root, env, acc)
+	if err != nil {
+		return display.CheckResult{Name: c.cfg.Account, Installed: fmt.Sprintf("identity check failed: %v", err)}
+	}
+	if !id.LoggedIn {
+		return display.CheckResult{
+			Name:      c.cfg.Account,
+			Installed: fmt.Sprintf("not logged in — run 'aide account login %s'", c.cfg.Account),
+		}
+	}
+	return display.CheckResult{Name: c.cfg.Account, Ok: true, Installed: id.Label}
 }
 
 // CheckTools checks all configured tools for availability and version constraints.

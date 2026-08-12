@@ -27,6 +27,21 @@ func PrintProviderResult(w io.Writer, r CheckResult) {
 	}
 }
 
+// PrintAccountResult prints the account check result. A zero-value Name
+// means no account is configured for this project, in which case nothing
+// is printed — accountless projects must look bit-identical to before this
+// check existed.
+func PrintAccountResult(w io.Writer, r CheckResult) {
+	if r.Name == "" {
+		return
+	}
+	if r.Ok {
+		fmt.Fprintf(w, "  OK  account: %s — %s\n", r.Name, r.Installed)
+	} else {
+		fmt.Fprintf(w, "  FAIL  account: %s — %s\n", r.Name, r.Installed)
+	}
+}
+
 // PrintToolResults prints all tool check results.
 func PrintToolResults(w io.Writer, tools []CheckResult) {
 	for _, r := range tools {
@@ -49,9 +64,11 @@ func PrintToolResults(w io.Writer, tools []CheckResult) {
 	}
 }
 
-// AllOk returns true if all results are Ok and there are results.
-func AllOk(provider CheckResult, tools []CheckResult) bool {
-	if !provider.Ok {
+// AllOk returns true if provider, account, and every tool result are Ok.
+// account should be CheckResult{Ok: true} when no account is configured,
+// so accountless projects are never gated by it.
+func AllOk(provider, account CheckResult, tools []CheckResult) bool {
+	if !provider.Ok || !account.Ok {
 		return false
 	}
 	for _, t := range tools {

@@ -25,7 +25,25 @@ func (l *Launcher) Launch(name string, args ...string) error {
 // If env is set, it is used as the child process environment.
 // If env is nil, the current process environment is used as base.
 func (l *Launcher) LaunchWithEnv(name string, env []string, args ...string) error {
-	path, err := lookPathInEnv(name, env)
+	base := env
+	if base == nil {
+		base = os.Environ()
+	}
+
+	// Account env must be computed before PATH resolution: an account's
+	// environment plan can itself influence which binary gets resolved
+	// (e.g. isolated mode's shim PATH combined with a per-account PATH
+	// addition), so lookPathInEnv has to see the final env, not the
+	// pre-account one.
+	if l.AccountName != "" {
+		var err error
+		base, err = l.applyAccount(name, base)
+		if err != nil {
+			return fmt.Errorf("applying account %q: %w", l.AccountName, err)
+		}
+	}
+
+	path, err := lookPathInEnv(name, base)
 	if err != nil {
 		return fmt.Errorf("provider %q not found in PATH", name)
 	}
@@ -34,17 +52,7 @@ func (l *Launcher) LaunchWithEnv(name string, env []string, args ...string) erro
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
-	if env != nil {
-		cmd.Env = env
-	}
-
-	// Apply account switching if configured
-	if l.AccountName != "" {
-		if err := l.applyAccount(cmd); err != nil {
-			return fmt.Errorf("switching account: %w", err)
-		}
-	}
+	cmd.Env = base
 
 	return cmd.Run()
 }
@@ -92,23 +100,29 @@ func IsolatedEnv(projectDir string) []string {
 	return append(env, "PATH="+shimDir)
 }
 
-// applyAccount loads the account and applies provider-specific switching.
-func (l *Launcher) applyAccount(cmd *exec.Cmd) error {
+// applyAccount loads the account, verifies it matches the provider being
+// launched, and returns the environment to launch it with. providerName is
+// the binary the caller is about to exec (cfg.Provider) — a claude account
+// bound to a copilot launch (or vice versa) is a config error, not
+// something to silently ignore.
+func (l *Launcher) applyAccount(providerName string, base []string) ([]string, error) {
 	acc, err := account.Get(l.AccountName)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if acc.Provider != providerName {
+		return nil, fmt.Errorf("account %q is configured for provider %q, but aide.yaml provider is %q", l.AccountName, acc.Provider, providerName)
 	}
 
-	switch acc.Provider {
-	case "copilot":
-		return applyCopilotAccount(acc)
-	case "claude":
-		return applyClaudeAccount(acc, cmd)
-	case "codex":
-		return applyCodexAccount(acc, cmd)
-	default:
-		return fmt.Errorf("unknown provider %q for account %q", acc.Provider, l.AccountName)
+	// copilot's identity lever (gh auth switch) is a global side effect,
+	// not an environment change, and has no profile-based replacement yet.
+	if acc.Provider == "copilot" && !account.IsProfileBased(l.AccountName, acc) {
+		if err := applyCopilotAccount(acc); err != nil {
+			return nil, err
+		}
 	}
+
+	return accountEnv(l.AccountName, acc, base)
 }
 
 func applyCopilotAccount(acc account.Account) error {
@@ -123,14 +137,35 @@ func applyCopilotAccount(acc account.Account) error {
 	return nil
 }
 
-func applyClaudeAccount(acc account.Account, cmd *exec.Cmd) error {
-	cmd.Env = replaceEnv(cmd.Env, "ANTHROPIC_API_KEY", acc.APIKey)
-	return nil
-}
+// accountEnv returns the environment for launching acc's provider on top of
+// base. It is pure — no exec calls, no global mutation — so it is
+// table-testable without a real provider CLI. Profile-based accounts (an
+// on-disk credential profile exists for name) go through their provider's
+// Adapter; everything else falls back to the pre-profile legacy fields, so
+// behavior for existing accounts.json entries is unchanged.
+func accountEnv(name string, acc account.Account, base []string) ([]string, error) {
+	if account.IsProfileBased(name, acc) {
+		adapter, ok := account.Adapters[acc.Provider]
+		if !ok {
+			return nil, fmt.Errorf("provider %q does not support credential profiles", acc.Provider)
+		}
+		root, err := account.ProfileDir(name, acc)
+		if err != nil {
+			return nil, err
+		}
+		return account.BuildEnv(adapter, root, acc, base)
+	}
 
-func applyCodexAccount(acc account.Account, cmd *exec.Cmd) error {
-	cmd.Env = replaceEnv(cmd.Env, "CODEX_HOME", acc.CodexHome)
-	return nil
+	switch acc.Provider {
+	case "copilot":
+		return base, nil
+	case "claude":
+		return replaceEnv(base, "ANTHROPIC_API_KEY", acc.APIKey), nil
+	case "codex":
+		return replaceEnv(base, "CODEX_HOME", acc.CodexHome), nil
+	default:
+		return nil, fmt.Errorf("unknown provider %q for account %q", acc.Provider, name)
+	}
 }
 
 // replaceEnv builds a new env slice, replacing the target variable if it already exists.

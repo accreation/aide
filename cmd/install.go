@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"aide/internal/checker"
 	"aide/internal/config"
 	"aide/internal/display"
 	"aide/internal/installer"
-	"aide/internal/launcher"
 
 	"github.com/spf13/cobra"
 )
@@ -99,24 +97,20 @@ func runInstall(cmd *cobra.Command, args []string) error {
 
 	// Re-check after all installs
 	providerResult = chk.CheckProvider()
+	accountResult := chk.CheckAccount()
 	toolResults = chk.CheckTools()
 
 	fmt.Println("\nAide — final check")
 	fmt.Println("──────────────────")
 	display.PrintProviderResult(os.Stdout, providerResult)
+	display.PrintAccountResult(os.Stdout, accountResult)
 	display.PrintToolResults(os.Stdout, toolResults)
 
-	if !display.AllOk(providerResult, toolResults) {
+	if !display.AllOk(providerResult, accountResult, toolResults) {
 		fmt.Fprintln(os.Stderr, "\nSome items could not be installed. Check the errors above.")
 		os.Exit(1)
 	}
 
 	fmt.Println("\nLaunching provider...")
-	l := &launcher.Launcher{AccountName: cfg.Account}
-	extraArgs := strings.Fields(cfg.Args)
-	if cfg.IsIsolated() {
-		env := launcher.IsolatedEnv(projectDir)
-		return l.LaunchWithEnv(cfg.Provider, env, extraArgs...)
-	}
-	return l.Launch(cfg.Provider, extraArgs...)
+	return launchProvider(cfg, projectDir)
 }

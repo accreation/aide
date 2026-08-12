@@ -4,15 +4,21 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
 	"testing"
 )
 
+func setHome(t *testing.T, dir string) {
+	t.Helper()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
+}
+
 func TestAddAndGet(t *testing.T) {
-	// Override home dir for isolated test
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	err := Add("company-x", Account{
 		Provider: "copilot",
@@ -34,10 +40,20 @@ func TestAddAndGet(t *testing.T) {
 	}
 }
 
+func TestAddRejectsInvalidName(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	for _, name := range []string{"", ".", "..", "a/b", `a\b`, "a:b", "trailing.", " leading", "trailing ", "con", "COM1", "com1.txt"} {
+		if err := Add(name, Account{Provider: "claude"}); err == nil {
+			t.Errorf("Add(%q) expected error, got nil", name)
+		}
+	}
+}
+
 func TestGetNotFound(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	_, err := Get("nonexistent")
 	if err == nil {
@@ -47,11 +63,10 @@ func TestGetNotFound(t *testing.T) {
 
 func TestRemove(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	Add("temp", Account{Provider: "claude", APIKey: "sk-test"})
-	err := Remove("temp")
+	err := Remove("temp", RemoveOptions{})
 	if err != nil {
 		t.Fatalf("Remove failed: %v", err)
 	}
@@ -61,10 +76,99 @@ func TestRemove(t *testing.T) {
 	}
 }
 
+func TestRemoveRefusesToDeleteProfileWithoutForceOrKeep(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	Add("acme", Account{Provider: "claude"})
+	if err := CreateProfile("acme", Account{Provider: "claude"}); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+	dir, err := ProfileDir("acme", Account{Provider: "claude"})
+	if err != nil {
+		t.Fatalf("ProfileDir failed: %v", err)
+	}
+
+	if err := Remove("acme", RemoveOptions{}); err == nil {
+		t.Fatal("expected Remove to refuse deleting an existing profile without --force/--keep-credentials")
+	}
+
+	// The refusal must not have partially removed anything: the index entry
+	// and the profile directory should both still be there.
+	if _, err := Get("acme"); err != nil {
+		t.Errorf("expected accounts.json entry to survive a refused Remove, got: %v", err)
+	}
+	if _, err := os.Stat(dir); err != nil {
+		t.Errorf("expected profile dir to survive a refused Remove, got: %v", err)
+	}
+}
+
+func TestRemoveKeepCredentialsLeavesProfileOnDisk(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	Add("acme", Account{Provider: "claude"})
+	if err := CreateProfile("acme", Account{Provider: "claude"}); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+	dir, err := ProfileDir("acme", Account{Provider: "claude"})
+	if err != nil {
+		t.Fatalf("ProfileDir failed: %v", err)
+	}
+
+	if err := Remove("acme", RemoveOptions{KeepCredentials: true}); err != nil {
+		t.Fatalf("Remove failed: %v", err)
+	}
+	if _, err := Get("acme"); err == nil {
+		t.Error("expected accounts.json entry to be gone")
+	}
+	if _, err := os.Stat(dir); err != nil {
+		t.Errorf("expected profile dir to survive --keep-credentials, got: %v", err)
+	}
+}
+
+func TestRemoveForceDeletesProfile(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	Add("acme", Account{Provider: "claude"})
+	if err := CreateProfile("acme", Account{Provider: "claude"}); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+	dir, err := ProfileDir("acme", Account{Provider: "claude"})
+	if err != nil {
+		t.Fatalf("ProfileDir failed: %v", err)
+	}
+
+	if err := Remove("acme", RemoveOptions{Force: true}); err != nil {
+		t.Fatalf("Remove failed: %v", err)
+	}
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		t.Errorf("expected profile dir to be deleted, stat returned: %v", err)
+	}
+}
+
+func TestRemoveNeverDeletesAdoptedDir(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	adopted := filepath.Join(tmp, "my-existing-codex-home")
+	if err := os.MkdirAll(adopted, 0700); err != nil {
+		t.Fatalf("seeding adopted dir: %v", err)
+	}
+
+	Add("existing", Account{Provider: "codex", Dir: adopted})
+	if err := Remove("existing", RemoveOptions{Force: true}); err != nil {
+		t.Fatalf("Remove failed: %v", err)
+	}
+	if _, err := os.Stat(adopted); err != nil {
+		t.Errorf("expected adopted dir to survive Remove even with --force, got: %v", err)
+	}
+}
+
 func TestList(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	Add("a", Account{Provider: "copilot", User: "a"})
 	Add("b", Account{Provider: "claude", APIKey: "sk-b"})
@@ -78,25 +182,30 @@ func TestList(t *testing.T) {
 	}
 }
 
-func TestAddAPIKeyIsMaskedInFile(t *testing.T) {
+// TestAddAPIKeyStoredInFile documents (rather than assumes) that legacy API
+// keys are stored in plaintext in accounts.json, protected only by 0600
+// file permissions — there is no keyring dependency (see CLAUDE.md's
+// three-dependency rule). A previous version of this test only asserted
+// the file was non-empty, which passed regardless of what was in it.
+func TestAddAPIKeyStoredInFile(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	Add("test", Account{Provider: "claude", APIKey: "sk-ant-secret123"})
 
 	home, _ := os.UserHomeDir()
-	data, _ := os.ReadFile(filepath.Join(home, ".aide", "accounts.json"))
-	// API key should NOT appear in plain text in the JSON file
-	if string(data) == "" {
-		t.Fatal("accounts.json should exist")
+	data, err := os.ReadFile(filepath.Join(home, ".aide", "accounts.json"))
+	if err != nil {
+		t.Fatalf("reading accounts.json: %v", err)
+	}
+	if !strings.Contains(string(data), "sk-ant-secret123") {
+		t.Fatalf("expected api_key to be stored in accounts.json, got: %s", data)
 	}
 }
 
 func TestAccountsFilePermissionsReenforcedOnWrite(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	if err := Add("a", Account{Provider: "claude", APIKey: "sk-a"}); err != nil {
 		t.Fatalf("Add failed: %v", err)
@@ -122,8 +231,7 @@ func TestAccountsFilePermissionsReenforcedOnWrite(t *testing.T) {
 
 func TestConcurrentAddDoesNotLoseUpdates(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("HOME", tmp)
-	t.Setenv("USERPROFILE", tmp)
+	setHome(t, tmp)
 
 	const n = 20
 	var wg sync.WaitGroup
@@ -145,5 +253,98 @@ func TestConcurrentAddDoesNotLoseUpdates(t *testing.T) {
 	}
 	if len(accounts) != n {
 		t.Errorf("expected %d accounts after concurrent adds, got %d (lost updates)", n, len(accounts))
+	}
+}
+
+func TestProfileDirUsesExplicitDir(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	dir, err := ProfileDir("whatever", Account{Provider: "codex", Dir: filepath.Join(tmp, "custom")})
+	if err != nil {
+		t.Fatalf("ProfileDir failed: %v", err)
+	}
+	want, _ := filepath.Abs(filepath.Join(tmp, "custom"))
+	if dir != want {
+		t.Errorf("expected %q, got %q", want, dir)
+	}
+}
+
+func TestProfileDirDefaultsUnderAccountsDir(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	dir, err := ProfileDir("acme", Account{Provider: "claude"})
+	if err != nil {
+		t.Fatalf("ProfileDir failed: %v", err)
+	}
+	want := filepath.Join(tmp, ".aide", "accounts", "acme")
+	if dir != want {
+		t.Errorf("expected %q, got %q", want, dir)
+	}
+}
+
+func TestIsProfileBasedFalseUntilCreated(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	acc := Account{Provider: "claude"}
+	if IsProfileBased("acme", acc) {
+		t.Error("expected IsProfileBased to be false before CreateProfile")
+	}
+	if err := CreateProfile("acme", acc); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+	if !IsProfileBased("acme", acc) {
+		t.Error("expected IsProfileBased to be true after CreateProfile")
+	}
+}
+
+func TestLegacyAccountIsNotProfileBased(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	// An account created before credential profiles existed has no
+	// directory on disk, so it must keep using its legacy fields.
+	acc := Account{Provider: "claude", APIKey: "sk-legacy"}
+	Add("legacy", acc)
+	if IsProfileBased("legacy", acc) {
+		t.Error("expected a pre-existing legacy account with no profile dir to not be profile-based")
+	}
+}
+
+func TestCreateProfileCreatesAdapterDirs(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	acc := Account{Provider: "codex"}
+	if err := CreateProfile("acme", acc); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+	root, err := ProfileDir("acme", acc)
+	if err != nil {
+		t.Fatalf("ProfileDir failed: %v", err)
+	}
+	codexHome := filepath.Join(root, "codex")
+	if info, err := os.Stat(codexHome); err != nil || !info.IsDir() {
+		t.Fatalf("expected %s to exist as a directory: %v", codexHome, err)
+	}
+	if runtime.GOOS != "windows" {
+		info, _ := os.Stat(codexHome)
+		if info.Mode().Perm() != 0700 {
+			t.Errorf("expected 0700, got %o", info.Mode().Perm())
+		}
+	}
+	if _, err := os.Stat(filepath.Join(codexHome, "config.toml")); err != nil {
+		t.Errorf("expected codex config.toml to be seeded: %v", err)
+	}
+}
+
+func TestCreateProfileUnsupportedProvider(t *testing.T) {
+	tmp := t.TempDir()
+	setHome(t, tmp)
+
+	if err := CreateProfile("acme", Account{Provider: "copilot"}); err == nil {
+		t.Fatal("expected error for a provider with no adapter")
 	}
 }

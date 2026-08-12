@@ -52,6 +52,32 @@ func TestPrintToolResultsFoundVersionUndetermined(t *testing.T) {
 	}
 }
 
+func TestPrintAccountResultNoneConfiguredPrintsNothing(t *testing.T) {
+	var buf bytes.Buffer
+	PrintAccountResult(&buf, CheckResult{Ok: true})
+	if buf.Len() != 0 {
+		t.Errorf("expected nothing printed for an accountless project, got: %s", buf.String())
+	}
+}
+
+func TestPrintAccountResultOk(t *testing.T) {
+	var buf bytes.Buffer
+	PrintAccountResult(&buf, CheckResult{Name: "acme", Ok: true, Installed: "anar@acme.example"})
+	out := buf.String()
+	if !strings.Contains(out, "OK") || !strings.Contains(out, "acme") || !strings.Contains(out, "anar@acme.example") {
+		t.Errorf("expected OK/acme/email, got: %s", out)
+	}
+}
+
+func TestPrintAccountResultFail(t *testing.T) {
+	var buf bytes.Buffer
+	PrintAccountResult(&buf, CheckResult{Name: "acme", Ok: false, Installed: "not logged in"})
+	out := buf.String()
+	if !strings.Contains(out, "FAIL") || !strings.Contains(out, "acme") || !strings.Contains(out, "not logged in") {
+		t.Errorf("expected FAIL/acme/not logged in, got: %s", out)
+	}
+}
+
 func TestPrintToolResults(t *testing.T) {
 	var buf bytes.Buffer
 	results := []CheckResult{
