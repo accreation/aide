@@ -132,10 +132,15 @@ var Adapters = map[string]*Adapter{
 				"GH_CONFIG_DIR=" + ghConfigDir,
 				"COPILOT_AUTO_UPDATE=false",
 			}
-			// With no acc.Token, identity falls through to gh's own store
-			// under GH_CONFIG_DIR (seeded via LoginArgv's `gh auth login`).
-			if acc.Token != "" {
-				env = append(env, "COPILOT_GITHUB_TOKEN="+acc.Token)
+			// With no acc.Token/acc.Command, identity falls through to gh's
+			// own store under GH_CONFIG_DIR (seeded via LoginArgv's
+			// `gh auth login`).
+			token, err := ResolveToken(acc)
+			if err != nil {
+				return nil, err
+			}
+			if token != "" {
+				env = append(env, "COPILOT_GITHUB_TOKEN="+token)
 			}
 			return env, nil
 		},

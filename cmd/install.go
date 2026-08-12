@@ -52,6 +52,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	}
 
 	projectDir := filepath.Dir(cfgPath)
+	cfg.Account = resolveAccountName(cfg, projectDir)
 
 	var chk *checker.Checker
 	if cfg.IsIsolated() {

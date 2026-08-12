@@ -354,6 +354,80 @@ func TestCreateProfileCreatesAdapterDirs(t *testing.T) {
 	}
 }
 
+func TestResolveTokenPrefersCommandOverToken(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shell command fakes are unix-specific")
+	}
+	acc := Account{Provider: "copilot", Token: "stale-token", Command: "echo from-broker"}
+	got, err := ResolveToken(acc)
+	if err != nil {
+		t.Fatalf("ResolveToken failed: %v", err)
+	}
+	if got != "from-broker" {
+		t.Errorf("expected Command's output to win over Token, got %q", got)
+	}
+}
+
+func TestResolveTokenFallsBackToTokenWithoutCommand(t *testing.T) {
+	acc := Account{Provider: "copilot", Token: "ghp_example"}
+	got, err := ResolveToken(acc)
+	if err != nil {
+		t.Fatalf("ResolveToken failed: %v", err)
+	}
+	if got != "ghp_example" {
+		t.Errorf("expected Token, got %q", got)
+	}
+}
+
+func TestResolveTokenTrimsCommandOutput(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shell command fakes are unix-specific")
+	}
+	acc := Account{Provider: "copilot", Command: "printf '  secret-value\\n\\n'"}
+	got, err := ResolveToken(acc)
+	if err != nil {
+		t.Fatalf("ResolveToken failed: %v", err)
+	}
+	if got != "secret-value" {
+		t.Errorf("expected trimmed output, got %q", got)
+	}
+}
+
+func TestResolveTokenPropagatesCommandFailure(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shell command fakes are unix-specific")
+	}
+	acc := Account{Provider: "copilot", Command: "exit 1"}
+	if _, err := ResolveToken(acc); err == nil {
+		t.Fatal("expected an error when the broker command fails")
+	}
+}
+
+func TestResolveAPIKeyPrefersCommandOverAPIKey(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shell command fakes are unix-specific")
+	}
+	acc := Account{Provider: "claude", APIKey: "sk-ant-stale", Command: "echo sk-ant-from-broker"}
+	got, err := ResolveAPIKey(acc)
+	if err != nil {
+		t.Fatalf("ResolveAPIKey failed: %v", err)
+	}
+	if got != "sk-ant-from-broker" {
+		t.Errorf("expected Command's output to win over APIKey, got %q", got)
+	}
+}
+
+func TestResolveAPIKeyFallsBackToAPIKeyWithoutCommand(t *testing.T) {
+	acc := Account{Provider: "claude", APIKey: "sk-ant-xxx"}
+	got, err := ResolveAPIKey(acc)
+	if err != nil {
+		t.Fatalf("ResolveAPIKey failed: %v", err)
+	}
+	if got != "sk-ant-xxx" {
+		t.Errorf("expected APIKey, got %q", got)
+	}
+}
+
 func TestCreateProfileUnsupportedProvider(t *testing.T) {
 	tmp := t.TempDir()
 	setHome(t, tmp)

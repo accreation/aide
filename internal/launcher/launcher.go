@@ -147,7 +147,11 @@ func accountEnv(name string, acc account.Account, base []string) ([]string, erro
 		// profile.
 		return nil, fmt.Errorf("account %q uses the removed 'gh auth switch' method — re-add it without --user (optionally with --token) to get an isolated credential profile, then run 'aide account login %s'", name, name)
 	case "claude":
-		return replaceEnv(base, "ANTHROPIC_API_KEY", acc.APIKey), nil
+		apiKey, err := account.ResolveAPIKey(acc)
+		if err != nil {
+			return nil, err
+		}
+		return replaceEnv(base, "ANTHROPIC_API_KEY", apiKey), nil
 	case "codex":
 		return replaceEnv(base, "CODEX_HOME", acc.CodexHome), nil
 	default:

@@ -255,6 +255,22 @@ func TestCopilotAdapterEnvSetsTokenWhenProvided(t *testing.T) {
 	}
 }
 
+func TestCopilotAdapterEnvUsesCommandBrokerOverToken(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shell command fakes are unix-specific")
+	}
+	root := t.TempDir()
+	adapter := Adapters["copilot"]
+
+	env, err := BuildEnv(adapter, root, Account{Provider: "copilot", Token: "stale", Command: "echo from-broker"}, nil)
+	if err != nil {
+		t.Fatalf("BuildEnv failed: %v", err)
+	}
+	if !containsEnv(env, "COPILOT_GITHUB_TOKEN=from-broker") {
+		t.Errorf("expected the broker's output to become COPILOT_GITHUB_TOKEN, got %v", env)
+	}
+}
+
 func withCopilotIdentityServer(t *testing.T, handler http.HandlerFunc) {
 	t.Helper()
 	server := httptest.NewServer(handler)

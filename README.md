@@ -288,7 +288,9 @@ Aide uses [Masterminds/semver](https://github.com/Masterminds/semver) for versio
 | `--user` | `account add` | GitHub username (for Copilot accounts) |
 | `--api-key` | `account add` | API key (for Claude accounts) |
 | `--codex-home` | `account add` | Codex home directory path (for Codex accounts) |
+| `--command` | `account add` | Credential broker command; its stdout (trimmed) becomes the account's secret instead of `--token`/`--api-key` |
 | `--recipes-url` | *(global)* | URL to fetch external recipes from (env: `AIDE_RECIPES_URL`) |
+| `--account` | *(global)* | Account name to use, overriding `aide.yaml` (env: `AIDE_ACCOUNT`) — see [Account Binding Precedence](#account-binding-precedence) |
 
 ### Exit Codes
 
@@ -439,6 +441,58 @@ Aide — environment check
 This means you can have different projects use different accounts — no manual switching needed. Launch any project with `aide` (or `aide start`) and the right account is applied automatically.
 
 > 💡 Combine isolated mode with account switching for fully self-contained project environments: `mode: isolated` + `account: acme-claude` gives you both tool isolation and account isolation.
+
+### Account Binding Precedence
+
+`aide.yaml` is committed and cloned from strangers, so its `account:` field is trusted as a *name only* — never as something that overrides your own identity on your own machine. If you need a different account than what a repo declares (or the repo declares none at all), resolve it from highest to lowest precedence:
+
+```
+--account <name>              (flag)
+AIDE_ACCOUNT=<name>           (env)
+~/.aide/config.yaml bindings  (user-owned, path-conditional)
+aide.yaml  account: <name>    (repo-declared, lowest)
+```
+
+`~/.aide/config.yaml` is never written by `aide` and never committed — you maintain it by hand, the same way you'd maintain a git `includeIf` block:
+
+```yaml
+# ~/.aide/config.yaml
+bindings:
+  - path: ~/work/acme/**
+    account: acme-corp
+  - path: ~/work/dcb/**
+    # Per-provider map instead of a bare account: — useful if this repo's
+    # provider might change (claude today, copilot tomorrow) without
+    # having to edit this file to keep the same identity.
+    accounts:
+      claude: dcb-claude
+      copilot: dcb-gh
+  - path: ~/personal/**
+    account: personal
+```
+
+Longest-prefix match wins, so a more specific binding (`~/work/acme/frontend/**`) overrides a broader one (`~/work/acme/**`) for repos nested under it. `aide start <name>` and `aide install` resolve the same way `aide` does — the binding is keyed off `aide.yaml`'s directory, not your shell's cwd, so `cd` tricks can't accidentally dodge it.
+
+```bash
+# One-off override, e.g. testing a repo under an account it doesn't declare
+aide --account acme-personal
+
+# Session-wide override
+export AIDE_ACCOUNT=acme-personal
+```
+
+#### Credential brokers
+
+An account's secret doesn't have to sit in `~/.aide/accounts.json` in the clear. Set `--command` instead of `--token`/`--api-key` and its stdout (trimmed) is used as the secret instead — the same shape as AWS's `credential_process` or git's `credential.helper`: whatever prints the credential to stdout works, including `op read`, `security find-generic-password`, `secret-tool lookup`, or `pass show`.
+
+```bash
+aide account add acme-copilot --provider copilot --command "op read op://work/acme-github/token"
+aide account add personal-claude --provider claude --command "security find-generic-password -s anthropic-key -w"
+```
+
+The command re-runs on every launch — nothing is cached to disk — and, when set, always takes precedence over a `--token`/`--api-key` also present on the same account.
+
+> `aide.yaml` can never carry a `command:` of its own, an env-interpolated account name, or a raw secret — only a plain account *name*, resolved against your own `~/.aide/accounts.json` and `~/.aide/config.yaml`. This is deliberate: a committed, cloned config file must never be able to dereference your credentials or your ambient environment on its own.
 
 ### Legacy accounts
 
@@ -617,6 +671,7 @@ internal/
   display/      — formats check/install results for terminal output
   project/      — named project registry (~/.aide/projects.json), used by `aide start`
   semver/       — extracts versions from --version output and checks constraints
+  userconfig/   — parses ~/.aide/config.yaml (user-owned account bindings), longest-prefix path match against aide.yaml's directory
 ```
 
 ### Key Design Decisions
@@ -627,7 +682,8 @@ internal/
 - **Version detection** tries `--version` first, then `-v`, then the `version` subcommand. Uses regex to extract the first semver from the output.
 - **`aide start`** uses a JSON registry at `~/.aide/projects.json` (name → absolute path), chdir's into the project, then runs the full check + launch flow.
 - **Isolated mode** installs tools to `.aide/store/<tool>/<version>/bin/` and creates shims in `.aide/shims/` — prepended to `PATH` before launching the provider. Only `github` and `pipx` recipes support full isolation; system PMs fall back to global install.
-- **Account switching**: `claude`/`codex` accounts with a credential profile (`~/.aide/accounts/<name>/`, `0700`) bind a launched process to it via `internal/account`'s per-provider `Adapter` (`CLAUDE_CONFIG_DIR` / `CODEX_HOME`), verified with a cheap identity check in `Checker.CheckAccount()` before launch. Accounts without a profile fall back to the pre-profile legacy fields in `~/.aide/accounts.json` (`0600`): `gh auth switch` for Copilot, `ANTHROPIC_API_KEY` for Claude, `CODEX_HOME` for Codex.
+- **Account switching**: `claude`/`codex`/`copilot`/`opencode` accounts with a credential profile (`~/.aide/accounts/<name>/`, `0700`) bind a launched process to it via `internal/account`'s per-provider `Adapter` (`CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `GH_CONFIG_DIR`/`COPILOT_HOME`, `XDG_DATA_HOME`), verified with a cheap identity check in `Checker.CheckAccount()` before launch. Accounts without a profile fall back to the pre-profile legacy fields in `~/.aide/accounts.json` (`0600`): `ANTHROPIC_API_KEY` for Claude, `CODEX_HOME` for Codex. Either fallback (and copilot's profile-based `Token`) can instead be sourced fresh on every launch from an `Account.Command` credential broker (`internal/account.ResolveToken`/`ResolveAPIKey`) rather than a stored secret.
+- **Account binding precedence**: which account name is actually used is resolved once, in `cmd.resolveAccountName`, as `--account` flag > `AIDE_ACCOUNT` env > `~/.aide/config.yaml` path bindings (`internal/userconfig`, longest-prefix match against `aide.yaml`'s directory and provider) > `aide.yaml`'s own `account:` field — never the reverse, since `aide.yaml` is committed/cloned and must not get the deciding vote over the machine's actual owner.
 - **PATH management** for GitHub release installs: Aide automatically adds `~/.local/bin` to your user PATH (via `~/.bashrc`, `~/.zshrc` on Unix, or `[Environment]::SetEnvironmentVariable` on Windows).
 
 ### Dependencies
@@ -649,6 +705,7 @@ Aide has exactly **3 external dependencies**:
 | Variable | Description |
 |----------|-------------|
 | `AIDE_RECIPES_URL` | URL to fetch external recipes from (same as `--recipes-url` flag) |
+| `AIDE_ACCOUNT` | Account name to use, overriding `aide.yaml` (same as `--account` flag) — see [Account Binding Precedence](#account-binding-precedence) |
 
 Build-time variables (set via `-ldflags`):
 

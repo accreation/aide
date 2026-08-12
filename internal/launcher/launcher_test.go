@@ -134,6 +134,22 @@ func TestAccountEnvLegacyClaudeSetsAPIKeyOverride(t *testing.T) {
 	}
 }
 
+func TestAccountEnvLegacyClaudeCommandBrokerOverridesAPIKey(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("shell command fakes are unix-specific")
+	}
+	setHome(t, t.TempDir())
+
+	acc := account.Account{Provider: "claude", APIKey: "sk-stale", Command: "echo sk-from-broker"}
+	env, err := accountEnv("legacy", acc, []string{"PATH=/usr/bin"})
+	if err != nil {
+		t.Fatalf("accountEnv failed: %v", err)
+	}
+	if !containsEnv(env, "ANTHROPIC_API_KEY=sk-from-broker") {
+		t.Errorf("expected the broker's output to override the legacy APIKey, got %v", env)
+	}
+}
+
 func TestAccountEnvLegacyCodexSetsHomeOverride(t *testing.T) {
 	setHome(t, t.TempDir())
 

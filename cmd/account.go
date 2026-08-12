@@ -33,7 +33,10 @@ Provider-specific flags:
             --token <github-pat>       (seeds COPILOT_GITHUB_TOKEN on a profile)
   Claude:   --api-key <key>            (legacy — omit for a credential profile)
   Codex:    --codex-home <path>        (legacy — omit for a credential profile)
-  Any:      --dir <path>               (adopt an existing directory as the profile root)`,
+  Any:      --dir <path>               (adopt an existing directory as the profile root)
+            --command <cmd>           (credential broker: stdout becomes the
+                                        secret in place of --token/--api-key,
+                                        e.g. "op read op://vault/item/field")`,
 	Args: cobra.ExactArgs(1),
 	RunE: runAccountAdd,
 }
@@ -88,6 +91,7 @@ var (
 	accountCodexHome       string
 	accountToken           string
 	accountDir             string
+	accountCommand         string
 	accountRemoveForce     bool
 	accountKeepCredentials bool
 )
@@ -99,6 +103,7 @@ func init() {
 	accountAddCmd.Flags().StringVar(&accountCodexHome, "codex-home", "", "Codex home directory path (legacy, for Codex)")
 	accountAddCmd.Flags().StringVar(&accountToken, "token", "", "Pre-provisioned credential to seed a profile with (e.g. a GitHub PAT for Copilot)")
 	accountAddCmd.Flags().StringVar(&accountDir, "dir", "", "Adopt an existing directory as the credential profile root")
+	accountAddCmd.Flags().StringVar(&accountCommand, "command", "", "Credential broker command; its stdout (trimmed) is used as the account's secret instead of --token/--api-key")
 	accountAddCmd.MarkFlagRequired("provider")
 
 	accountRemoveCmd.Flags().BoolVar(&accountRemoveForce, "force", false, "Also delete the credential profile directory")
@@ -122,6 +127,7 @@ func runAccountAdd(cmd *cobra.Command, args []string) error {
 		APIKey:    accountAPIKey,
 		CodexHome: accountCodexHome,
 		Token:     accountToken,
+		Command:   accountCommand,
 	}
 	if accountDir != "" {
 		abs, err := filepath.Abs(accountDir)
@@ -191,6 +197,9 @@ func runAccountList(cmd *cobra.Command, args []string) error {
 			detail = "(api key set)"
 		case a.Provider == "codex":
 			detail = fmt.Sprintf("(home: %s)", a.CodexHome)
+		}
+		if a.Command != "" {
+			detail += " [credential broker configured]"
 		}
 		fmt.Printf("  %s — %s %s\n", name, a.Provider, detail)
 	}
@@ -263,14 +272,18 @@ func runAccountStatus(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		cfgPath, err := config.FindPath(cwd)
+		if err != nil {
+			return fmt.Errorf("no account name given and no aide.yaml found: %w", err)
+		}
 		cfg, err := config.FindAndParse(cwd)
 		if err != nil {
 			return fmt.Errorf("no account name given and no aide.yaml found: %w", err)
 		}
-		if cfg.Account == "" {
-			return fmt.Errorf("no account name given and aide.yaml has no 'account' configured")
+		name = resolveAccountName(cfg, filepath.Dir(cfgPath))
+		if name == "" {
+			return fmt.Errorf("no account name given, no --account/AIDE_ACCOUNT/binding resolved one, and aide.yaml has no 'account' configured")
 		}
-		name = cfg.Account
 	}
 
 	acc, err := account.Get(name)

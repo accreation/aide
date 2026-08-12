@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -35,6 +36,16 @@ type Account struct {
 	// Adapter's Env, not applied directly by the launcher.
 	Token string `json:"token,omitempty"`
 
+	// Command is an optional credential-broker escape hatch, shaped like
+	// AWS's credential_process or git's credential.helper: when set, its
+	// stdout (trimmed) is used in place of Token or APIKey, so the real
+	// secret never has to sit in accounts.json — only a command that
+	// fetches it from a keyring (`op read op://...`, `security
+	// find-generic-password`, `secret-tool lookup`, `pass show`). See
+	// ResolveToken and ResolveAPIKey. Run fresh on every launch, never
+	// cached.
+	Command string `json:"command,omitempty"`
+
 	// Legacy fields, kept for backward compatibility with accounts created
 	// before credential profiles existed. Applied directly by the launcher
 	// only when no profile directory exists on disk for the account name.
@@ -48,6 +59,43 @@ type Account struct {
 // credential-profile isolation.
 func HasLegacyFields(a Account) bool {
 	return a.APIKey != "" || a.CodexHome != "" || a.User != ""
+}
+
+// runCredentialCommand runs command through the shell and returns its
+// stdout trimmed of surrounding whitespace — the AWS credential_process /
+// git credential.helper convention where stdout is the secret itself.
+func runCredentialCommand(command string) (string, error) {
+	shell, flag := "sh", "-c"
+	if runtime.GOOS == "windows" {
+		shell, flag = "cmd", "/C"
+	}
+	out, err := exec.Command(shell, flag, command).Output()
+	if err != nil {
+		return "", fmt.Errorf("running credential command %q: %w", command, err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
+// ResolveToken returns acc.Command's output if set, or acc.Token
+// otherwise — the credential-broker escape hatch for a pre-provisioned
+// secret (currently consumed by the copilot adapter's
+// COPILOT_GITHUB_TOKEN). Command takes precedence so a configured broker
+// stays authoritative even if a stale Token value is also present.
+func ResolveToken(acc Account) (string, error) {
+	if acc.Command != "" {
+		return runCredentialCommand(acc.Command)
+	}
+	return acc.Token, nil
+}
+
+// ResolveAPIKey returns acc.Command's output if set, or acc.APIKey
+// otherwise — the same broker escape hatch as ResolveToken, for legacy
+// claude accounts whose secret is injected directly as ANTHROPIC_API_KEY.
+func ResolveAPIKey(acc Account) (string, error) {
+	if acc.Command != "" {
+		return runCredentialCommand(acc.Command)
+	}
+	return acc.APIKey, nil
 }
 
 func accountsPath() (string, error) {
