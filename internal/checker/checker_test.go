@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 
+	"aide/internal/account"
 	"aide/internal/config"
 	"aide/internal/display"
 )
@@ -128,12 +129,113 @@ func TestCheckToolsVersionOnStderr(t *testing.T) {
 
 func TestAllOk(t *testing.T) {
 	p := display.CheckResult{Name: "go", Ok: true}
+	noAccount := display.CheckResult{Ok: true}
 	tools := []display.CheckResult{{Name: "gh", Ok: true}}
-	if !display.AllOk(p, tools) {
+	if !display.AllOk(p, noAccount, tools) {
 		t.Error("expected AllOk = true")
 	}
 	p.Ok = false
-	if display.AllOk(p, tools) {
+	if display.AllOk(p, noAccount, tools) {
 		t.Error("expected AllOk = false when provider fails")
+	}
+	p.Ok = true
+	failedAccount := display.CheckResult{Name: "acme", Ok: false}
+	if display.AllOk(p, failedAccount, tools) {
+		t.Error("expected AllOk = false when account fails")
+	}
+}
+
+func TestCheckAccountNoneConfigured(t *testing.T) {
+	c := New(&config.Config{Provider: "claude"})
+	r := c.CheckAccount()
+	if !r.Ok || r.Name != "" {
+		t.Errorf("expected an accountless project to be vacuously Ok with no Name, got %+v", r)
+	}
+}
+
+func TestCheckAccountNotFound(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	c := New(&config.Config{Provider: "claude", Account: "nonexistent"})
+	r := c.CheckAccount()
+	if r.Ok {
+		t.Error("expected CheckAccount to fail for an unregistered account")
+	}
+}
+
+func TestCheckAccountProviderMismatch(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	if err := account.Add("acme", account.Account{Provider: "claude", APIKey: "sk-x"}); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+
+	c := New(&config.Config{Provider: "copilot", Account: "acme"})
+	r := c.CheckAccount()
+	if r.Ok {
+		t.Error("expected CheckAccount to fail when account provider doesn't match aide.yaml provider")
+	}
+}
+
+func TestCheckAccountLegacyIsTrustedWithoutIdentityCheck(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	if err := account.Add("acme", account.Account{Provider: "claude", APIKey: "sk-x"}); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+
+	c := New(&config.Config{Provider: "claude", Account: "acme"})
+	r := c.CheckAccount()
+	if !r.Ok {
+		t.Errorf("expected a legacy account to be trusted (no on-disk profile to verify), got %+v", r)
+	}
+}
+
+func TestCheckAccountLegacyCopilotFailsWithUpgradeMessage(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	if err := account.Add("acme", account.Account{Provider: "copilot", User: "old-user"}); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+
+	c := New(&config.Config{Provider: "copilot", Account: "acme"})
+	r := c.CheckAccount()
+	if r.Ok {
+		t.Errorf("expected a legacy copilot account (gh auth switch removed) to fail the check, got %+v", r)
+	}
+}
+
+func TestCheckAccountProfileBasedNotLoggedIn(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("USERPROFILE", tmp)
+
+	acc := account.Account{Provider: "claude"}
+	if err := account.Add("acme", acc); err != nil {
+		t.Fatalf("Add failed: %v", err)
+	}
+	if err := account.CreateProfile("acme", acc); err != nil {
+		t.Fatalf("CreateProfile failed: %v", err)
+	}
+
+	c := New(&config.Config{Provider: "claude", Account: "acme"})
+	r := c.CheckAccount()
+	// A freshly created, empty CLAUDE_CONFIG_DIR is never logged in,
+	// regardless of whether `claude` is installed or the host machine has a
+	// real, unrelated session — that's the isolation guarantee this check
+	// exists to verify.
+	if r.Ok {
+		t.Errorf("expected a fresh, empty profile to report not logged in, got %+v", r)
+	}
+	if r.Name != "acme" {
+		t.Errorf("expected Name to be the account name, got %+v", r)
 	}
 }

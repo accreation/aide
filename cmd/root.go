@@ -10,6 +10,7 @@ import (
 	"aide/internal/config"
 	"aide/internal/display"
 	"aide/internal/launcher"
+	"aide/internal/userconfig"
 
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,7 @@ var Version = "dev"
 var DefaultRecipesURL = ""
 
 var recipesURL string
+var accountFlag string
 
 var rootCmd = &cobra.Command{
 	Use:     "aide",
@@ -40,6 +42,7 @@ func Execute() error {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&recipesURL, "recipes-url", "", "URL to fetch external recipes from (env: AIDE_RECIPES_URL)")
+	rootCmd.PersistentFlags().StringVar(&accountFlag, "account", "", "Account name to use, overriding aide.yaml (env: AIDE_ACCOUNT)")
 }
 
 // resolveRecipesURL applies the documented precedence: --recipes-url flag >
@@ -52,6 +55,17 @@ func resolveRecipesURL() string {
 		return envURL
 	}
 	return DefaultRecipesURL
+}
+
+// resolveAccountName applies the documented account-binding precedence:
+// --account flag > AIDE_ACCOUNT env var > ~/.aide/config.yaml path bindings
+// (longest-prefix match against projectDir and cfg.Provider) > aide.yaml's
+// own account: field. A missing or unparsable ~/.aide/config.yaml is
+// treated as "no bindings" rather than an error, so a typo in the user's
+// own config can't brick an otherwise-working aide.yaml.
+func resolveAccountName(cfg *config.Config, projectDir string) string {
+	uc, _ := userconfig.Load()
+	return userconfig.ResolveAccountName(accountFlag, os.Getenv("AIDE_ACCOUNT"), uc, projectDir, cfg.Provider, cfg.Account)
 }
 
 func runCheck(cmd *cobra.Command, args []string) error {
@@ -75,6 +89,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	projectDir := filepath.Dir(cfgPath)
+	cfg.Account = resolveAccountName(cfg, projectDir)
 
 	var chk *checker.Checker
 	if cfg.IsIsolated() {
@@ -83,19 +98,28 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		chk = checker.New(cfg)
 	}
 	providerResult := chk.CheckProvider()
+	accountResult := chk.CheckAccount()
 	toolResults := chk.CheckTools()
 
 	fmt.Println("Aide — environment check")
 	fmt.Println("───────────────────────")
 	display.PrintProviderResult(os.Stdout, providerResult)
+	display.PrintAccountResult(os.Stdout, accountResult)
 	display.PrintToolResults(os.Stdout, toolResults)
 
-	if !display.AllOk(providerResult, toolResults) {
+	if !display.AllOk(providerResult, accountResult, toolResults) {
 		fmt.Println("\nSome items are missing or outdated. Run 'aide install' to fix.")
 		os.Exit(1)
 	}
 
 	fmt.Println("\nAll checks passed! Launching provider...")
+	return launchProvider(cfg, projectDir)
+}
+
+// launchProvider runs the standard launch tail shared by runCheck and
+// runInstall: build a Launcher for cfg.Account, apply isolated-mode PATH if
+// configured, and exec the provider.
+func launchProvider(cfg *config.Config, projectDir string) error {
 	l := &launcher.Launcher{AccountName: cfg.Account}
 	extraArgs := strings.Fields(cfg.Args)
 	if cfg.IsIsolated() {
