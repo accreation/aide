@@ -69,4 +69,5 @@ Only three external Go deps: `spf13/cobra` (CLI), `goccy/go-yaml` (YAML), `Maste
 - `README.md` is the primary user-facing reference (config schema, CLI flags, isolated mode, accounts, recipe format) — check it before re-explaining behavior here.
 - `docs/tools-catalog.md` — full table of built-in tool recipes, must stay in sync with `internal/installer/recipes.yaml`.
 - `docs/package-manager-infrastructure.md` / `docs/package-manager-tokens-guide.md` — distribution/publishing setup (Homebrew tap, Scoop bucket, APT/DNF repo, tokens), not relevant to day-to-day code changes.
+- `docs/credential-profile-verification.md` — manual runbook for verifying credential-profile isolation (`internal/account`) on macOS/Windows; tracks issue #41. Update its Results log and the README caveats once run.
 - `packaging/` holds the publish scripts and per-manager manifests (`apt`, `dnf`, `homebrew`, `chocolatey`, `scoop`) referenced by those docs.
