@@ -57,8 +57,8 @@ type Adapter struct {
 }
 
 // Adapters holds the credential-profile adapter for each provider that
-// supports one. A provider absent from this map (e.g. copilot, opencode in
-// this release) can only be used via legacy per-provider fields.
+// supports one — currently all four. A provider absent from this map could
+// only be used via legacy per-provider fields.
 var Adapters = map[string]*Adapter{
 	"claude": {
 		Provider: "claude",

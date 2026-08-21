@@ -107,17 +107,14 @@ func accountsPath() (string, error) {
 }
 
 func ensureDir() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("getting home directory: %w", err)
-	}
-	dir := filepath.Join(home, ".aide")
-	return os.MkdirAll(dir, 0755)
+	_, err := fsutil.AideDir()
+	return err
 }
 
 // accountsDir returns ~/.aide/accounts, the directory under which
-// credential profiles live (~/.aide/accounts/<name>/). It is 0700 since,
-// unlike ~/.aide itself, it holds nothing but credentials.
+// credential profiles live (~/.aide/accounts/<name>/). Like ~/.aide itself
+// it is 0700, but here the mode is re-asserted strictly (see
+// ensureAccountsDir): this tree holds nothing but credentials.
 func accountsDir() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {

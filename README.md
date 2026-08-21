@@ -414,7 +414,7 @@ aide account remove acme-claude --force
 
 > Copilot's identity resolution silently falls through several tiers (its own token env var, `GH_TOKEN`, `GITHUB_TOKEN`, its own credential store, then `gh auth token`) — a bad or missing credential doesn't error, it just runs (and bills) as whatever `gh auth token` returns ambiently. The copilot adapter scrubs `GH_TOKEN`/`GITHUB_TOKEN` and pins `GH_CONFIG_DIR` so that fallback resolves inside the profile instead of your real `gh` session. This has only been verified on Linux with GNOME Keyring; on macOS/Windows copilot's credential store is process-global (and `gh` may be absent from `PATH` on Windows), so double-check isolation there before relying on it.
 
-Accounts are stored in `~/.aide/accounts.json` with permissions `0600`; credential profile directories live under `~/.aide/accounts/` at `0700` (owner-only — never world-readable).
+Accounts are stored in `~/.aide/accounts.json` with permissions `0600`; `~/.aide` itself and the credential profile directories under `~/.aide/accounts/` are `0700` (owner-only — never world-readable). See [Known limitations](#known-limitations) for what these modes do and don't guarantee.
 
 ### Using Accounts in Projects
 
@@ -509,6 +509,16 @@ aide account add my-codex --provider codex --codex-home /path/to/codex/config
 ```
 
 **`copilot` accounts added with `--user` (before credential profiles) no longer work.** That flag ran `gh auth switch --user <username>` — a global mutation of `~/.config/gh/hosts.yml` that persisted after `aide` exited and made two concurrent `aide` sessions on different copilot accounts interfere with each other. That mechanism has been removed outright, not deprecated: `aide` refuses to launch with a clear error instead of silently running as whatever `gh` user happens to be active. `user:` was a pointer into global `gh` state, not a credential, so there is nothing to migrate automatically — re-add the account without `--user` (optionally with `--token`, see above) to get an isolated profile, then run `aide account login <name>`.
+
+### Known limitations
+
+Account isolation binds the *provider process* to a credential profile. Three things it deliberately does not do:
+
+**The resolved secret is visible in the child's environment.** Whether it comes from `--token`, `--api-key`, or a `--command` broker, the credential ends up in the launched process's environment, where any other process running as the same user can read it (`/proc/<pid>/environ` on Linux, `ps -E`/`procstat` elsewhere). A broker keeps the secret out of `~/.aide/accounts.json` on disk; it does not keep it out of the process environment. This is worth naming explicitly because the child here is an LLM agent, which can be prompted into printing its own environment. Isolation between *accounts* is the guarantee; secrecy from other processes under your own UID is not. The known upgrade path is `aws-vault --server`-style brokering (a local endpoint that hands out short-lived credentials instead of exporting a long-lived one) and is out of scope.
+
+**Tool credentials are not isolated — only the provider's.** The agent's own shell still runs `gh`, `glab`, `az` and friends with your global identity, so an agent working in a repo bound to `acme-corp` can still push to GitHub as your personal account. The one exception is a side effect: the copilot adapter pins `GH_CONFIG_DIR` into the profile, so `gh` invoked *inside* a copilot session resolves against the profile's own `gh` state. Nothing equivalent exists for the other three providers. If you need per-project tool identity today, set it up outside aide (a project-local `GH_CONFIG_DIR` via direnv, separate SSH keys, `git config user.email` per directory).
+
+**POSIX modes are advisory here, not part of the guarantee.** `~/.aide` and each profile directory are 0700 and the index files 0600, re-asserted on write — but those bits are no-ops on Windows, and aide will not refuse to launch because a mode could not be enforced. Isolation rests on the environment plan and the pre-launch identity check, not on the filesystem permissions.
 
 ---
 

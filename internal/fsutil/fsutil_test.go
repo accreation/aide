@@ -3,6 +3,7 @@ package fsutil
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -186,4 +187,62 @@ func itoa(v int) string {
 		v /= 10
 	}
 	return string(digits)
+}
+
+func setHome(t *testing.T, dir string) {
+	t.Helper()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
+}
+
+func TestAideDirCreates0700(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX permission bits are not meaningful on Windows")
+	}
+	home := t.TempDir()
+	setHome(t, home)
+
+	dir, err := AideDir()
+	if err != nil {
+		t.Fatalf("AideDir failed: %v", err)
+	}
+	if want := filepath.Join(home, ".aide"); dir != want {
+		t.Errorf("expected %s, got %s", want, dir)
+	}
+	fi, err := os.Stat(dir)
+	if err != nil {
+		t.Fatalf("stat failed: %v", err)
+	}
+	if perm := fi.Mode().Perm(); perm != 0700 {
+		t.Errorf("expected mode 0700 on a freshly created ~/.aide, got %04o", perm)
+	}
+}
+
+// An ~/.aide created by an older aide (or by any earlier umask) is 0755;
+// AideDir must re-tighten it, since os.MkdirAll leaves existing dirs alone.
+func TestAideDirRetightensExistingDir(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX permission bits are not meaningful on Windows")
+	}
+	home := t.TempDir()
+	setHome(t, home)
+
+	loose := filepath.Join(home, ".aide")
+	if err := os.MkdirAll(loose, 0755); err != nil {
+		t.Fatalf("seeding a 0755 dir failed: %v", err)
+	}
+	if err := os.Chmod(loose, 0755); err != nil {
+		t.Fatalf("chmod failed: %v", err)
+	}
+
+	if _, err := AideDir(); err != nil {
+		t.Fatalf("AideDir failed: %v", err)
+	}
+	fi, err := os.Stat(loose)
+	if err != nil {
+		t.Fatalf("stat failed: %v", err)
+	}
+	if perm := fi.Mode().Perm(); perm != 0700 {
+		t.Errorf("expected an existing 0755 ~/.aide to be re-tightened to 0700, got %04o", perm)
+	}
 }
