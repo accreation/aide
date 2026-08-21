@@ -77,3 +77,26 @@ func Lock(path string, timeout time.Duration) (func(), error) {
 		time.Sleep(50 * time.Millisecond)
 	}
 }
+
+// AideDir returns ~/.aide, creating it if needed.
+//
+// The directory is 0700: it holds accounts.json and projects.json (both
+// 0600), the credential profiles under accounts/ (0700), and the remote
+// recipe cache — all of it single-user state, so there is no reason for it
+// to be world-readable. Re-asserting the mode on an already-existing
+// directory is best-effort: these bits are defense in depth on top of the
+// per-file modes, they are no-ops on Windows, and aide must not refuse to
+// launch just because a mode could not be enforced.
+func AideDir() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("getting home directory: %w", err)
+	}
+	dir := filepath.Join(home, ".aide")
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return "", fmt.Errorf("creating %s: %w", dir, err)
+	}
+	// os.MkdirAll leaves an existing directory's permissions alone.
+	_ = os.Chmod(dir, 0700)
+	return dir, nil
+}

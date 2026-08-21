@@ -25,12 +25,8 @@ func projectsPath() (string, error) {
 }
 
 func ensureDir() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("getting home directory: %w", err)
-	}
-	dir := filepath.Join(home, ".aide")
-	return os.MkdirAll(dir, 0755)
+	_, err := fsutil.AideDir()
+	return err
 }
 
 func readProjects() (map[string]string, error) {
