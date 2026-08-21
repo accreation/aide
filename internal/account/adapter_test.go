@@ -36,6 +36,20 @@ func TestClaudeAdapterEnvIsAbsoluteAndScrubsSecureStorage(t *testing.T) {
 	}
 }
 
+func TestClaudeAdapterDisablesAutoUpdater(t *testing.T) {
+	root := t.TempDir()
+	adapter := Adapters["claude"]
+
+	env, err := BuildEnv(adapter, root, Account{Provider: "claude"}, nil)
+	if err != nil {
+		t.Fatalf("BuildEnv failed: %v", err)
+	}
+
+	if !containsEnv(env, "DISABLE_AUTOUPDATER=1") {
+		t.Errorf("expected DISABLE_AUTOUPDATER=1 in env (profiles must not race the global auto-updater install), got %v", env)
+	}
+}
+
 func TestCodexAdapterScrubsIsolationDefeatingVars(t *testing.T) {
 	root := t.TempDir()
 	adapter := Adapters["codex"]

@@ -69,7 +69,14 @@ var Adapters = map[string]*Adapter{
 			if err != nil {
 				return nil, err
 			}
-			return []string{"CLAUDE_CONFIG_DIR=" + dir}, nil
+			// claude's auto-updater installs to a global location
+			// (~/.local/share/claude/versions + the ~/.local/bin/claude
+			// symlink) regardless of CLAUDE_CONFIG_DIR, so two profiles
+			// launched concurrently race over one shared install and the
+			// binary can drift out from under aide's version check between
+			// runs. Disabling it per profile keeps that check meaningful,
+			// same as COPILOT_AUTO_UPDATE=false below.
+			return []string{"CLAUDE_CONFIG_DIR=" + dir, "DISABLE_AUTOUPDATER=1"}, nil
 		},
 		Prepare: func(profileRoot string, acc Account) error {
 			return mkdirProfile(filepath.Join(profileRoot, "claude"))
