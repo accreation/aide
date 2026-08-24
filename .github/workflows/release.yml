@@ -231,8 +231,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        manager: [homebrew, scoop, apt-dnf]
-        # TODO: uncomment when ready:
+        manager: [homebrew, scoop, winget, apt-dnf]
+        # TODO: uncomment chocolatey when API key + first submission done
         # manager: [homebrew, scoop, winget, chocolatey, apt-dnf]
     steps:
       - uses: actions/checkout@v4
@@ -253,12 +253,11 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq createrepo-c apt-utils
 
-      # TODO: uncomment when winget PR is accepted
-      # - name: Install dependencies (winget)
-      #   if: matrix.manager == 'winget'
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: '8.x'
+      - name: Install dependencies (winget)
+        if: matrix.manager == 'winget'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
 
       # TODO: uncomment when chocolatey API key + first submission done
       # - name: Install dependencies (chocolatey)
@@ -283,13 +282,12 @@ jobs:
           SCOOP_BUCKET_DEPLOY_KEY: ${{ secrets.SCOOP_BUCKET_DEPLOY_KEY }}
         run: bash packaging/publish-scoop.sh
 
-      # TODO: uncomment when winget PR is accepted
-      # - name: Publish (Winget)
-      #   if: matrix.manager == 'winget'
-      #   env:
-      #     VERSION: ${{ steps.version.outputs.VERSION }}
-      #     WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
-      #   run: bash packaging/publish-winget.sh
+      - name: Publish (Winget)
+        if: matrix.manager == 'winget'
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
+        run: bash packaging/publish-winget.sh
 
       # TODO: uncomment when chocolatey first submission done
       # - name: Publish (Chocolatey)
