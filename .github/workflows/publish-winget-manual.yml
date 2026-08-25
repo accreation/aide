@@ -1,0 +1,25 @@
+name: Publish Winget (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 0.9.0)'
+        required: true
+
+jobs:
+  publish:
+    name: Publish to Winget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Publish (Winget)
+        env:
+          VERSION: ${{ inputs.version }}
+          WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
+        run: bash packaging/publish-winget.sh
